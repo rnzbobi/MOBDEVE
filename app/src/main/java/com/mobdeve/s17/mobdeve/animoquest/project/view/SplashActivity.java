@@ -1,9 +1,11 @@
-package com.mobdeve.s17.mobdeve.animoquest.project;
+package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
 public class SplashActivity extends AppCompatActivity {
 

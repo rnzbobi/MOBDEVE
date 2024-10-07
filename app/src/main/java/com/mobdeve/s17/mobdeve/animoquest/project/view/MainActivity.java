@@ -1,4 +1,4 @@
-package com.mobdeve.s17.mobdeve.animoquest.project;
+package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.os.Bundle;
 
@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
 public class MainActivity extends AppCompatActivity {
 
