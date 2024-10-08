@@ -37,13 +37,11 @@ public class OnboardingActivity extends AppCompatActivity {
     public void loginFunction(View v) {
         Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
         startActivity(intent);
-        finish();
     }
 
     public void registerFunction (View v) {
         Intent intent = new Intent(getApplicationContext(), RegistrationActivity.class);
         startActivity(intent);
-        finish();
     }
 
 }
