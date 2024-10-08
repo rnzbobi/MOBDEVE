@@ -28,8 +28,8 @@
         <!-- Clickable icons with fixed sizes and spacing -->
         <ImageView
             android:id="@+id/map_icon"
-            android:layout_width="85dp"
-            android:layout_height="85dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:padding="25dp"
             android:src="@drawable/map_icon"
             android:clickable="true"
@@ -37,8 +37,8 @@
 
         <ImageView
             android:id="@+id/indoor_icon"
-            android:layout_width="85dp"
-            android:layout_height="85dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:padding="25dp"
             android:src="@drawable/indoor_navigation"
             android:clickable="true"
@@ -46,8 +46,8 @@
 
         <ImageView
             android:id="@+id/elevator_icon"
-            android:layout_width="85dp"
-            android:layout_height="85dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:padding="25dp"
             android:src="@drawable/elevator"
             android:clickable="true"
@@ -55,8 +55,8 @@
 
         <ImageView
             android:id="@+id/notification_icon"
-            android:layout_width="85dp"
-            android:layout_height="85dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:padding="25dp"
             android:src="@drawable/notification"
             android:clickable="true"
@@ -64,8 +64,8 @@
 
         <ImageView
             android:id="@+id/profile_icon"
-            android:layout_width="85dp"
-            android:layout_height="85dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
             android:padding="25dp"
             android:src="@drawable/profile"
             android:clickable="true"
