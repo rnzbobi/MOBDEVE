@@ -16,6 +16,25 @@
         android:layout_above="@+id/icon_container"
         android:layout_weight="1"/>
 
+    <!-- Search bar for destination -->
+    <EditText
+        android:id="@+id/et_destination"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:hint="Enter destination (e.g. Henry Hall)"
+        android:padding="16dp"/>
+
+    <!-- Get Directions button -->
+    <Button
+        android:id="@+id/btn_get_directions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/et_destination"
+        android:text="Get Directions"
+        android:layout_marginTop="8dp"
+        android:layout_centerHorizontal="true"/>
+
     <!-- Icon container (Horizontal layout for the icons) -->
     <LinearLayout
         android:id="@+id/icon_container"
