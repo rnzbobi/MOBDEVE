@@ -46,7 +46,7 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "MainActivity";
-    private static final String API_KEY = "AIzaSyAiiNxwT8yctf8YQCD3PBdCng7rtv4OuOk";
+    private static final String API_KEY = "AIzaSyBj61zucmzuoczsR7JbHmYPhdmRPDPndbU";
     private GoogleMap gMap;
     private EditText etDestination;
     private Button btnGetDirections;
@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPosition, initialZoomLevel));
 
         // Set zoom limits
-        gMap.setMinZoomPreference(18f); // Minimum zoom level
+        gMap.setMinZoomPreference(18.5f); // Minimum zoom level
         gMap.setMaxZoomPreference(21f); // Maximum zoom level
     }
 

@@ -13,27 +13,65 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/icon_container"
+        android:layout_above="@+id/btn_get_directions"
         android:layout_weight="1"/>
 
-    <!-- Search bar for destination -->
-    <EditText
-        android:id="@+id/et_destination"
+    <!-- Get Directions button -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:hint="Enter destination (e.g. Henry Hall)"
-        android:padding="16dp"/>
+        android:layout_height="70dp"
+        android:layout_margin="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/green_background"
+        android:elevation="8dp"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/search_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="12dp"
+            android:contentDescription="Search Icon"
+            android:src="@drawable/search" />
+
+        <EditText
+            android:id="@+id/et_destination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/search_icon"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:fontFamily="sans-serif-medium"
+            android:hint="Enter (e.g. DLSU Henry Sy Sr. Hall)"
+            android:paddingStart="8dp"
+            android:paddingEnd="16dp"
+            android:textColor="@android:color/darker_gray"
+            android:textColorHint="@android:color/darker_gray"
+            android:textSize="16sp"
+            android:layout_centerVertical="true"
+            android:paddingVertical="12dp"/>
+    </RelativeLayout>
+
 
     <!-- Get Directions button -->
     <Button
         android:id="@+id/btn_get_directions"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/et_destination"
-        android:text="Get Directions"
-        android:layout_marginTop="8dp"
-        android:layout_centerHorizontal="true"/>
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_above="@id/icon_container"
+        android:backgroundTint="@color/dlsugreen"
+        android:drawablePadding="8dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:fontFamily="sans-serif-medium"
+        android:padding="8dp"
+        android:text="Start Navigation"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
 
     <!-- Icon container (Horizontal layout for the icons) -->
     <LinearLayout
