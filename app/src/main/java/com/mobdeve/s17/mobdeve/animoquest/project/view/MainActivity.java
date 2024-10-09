@@ -117,8 +117,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPosition, initialZoomLevel));
 
         // Set zoom limits
-        gMap.setMinZoomPreference(18.5f); // Minimum zoom level
-        gMap.setMaxZoomPreference(21f); // Maximum zoom level
+        gMap.setMinZoomPreference(17f); // Minimum zoom level
+        gMap.setMaxZoomPreference(22f); // Maximum zoom level
     }
 
 
