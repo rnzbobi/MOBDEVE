@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/markerPopupId"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/marker_image"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:src="@drawable/logo_dlsu"
+        android:scaleType="fitXY"/>
+
+    <TextView
+        android:id="@+id/marker_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Marker Title"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:paddingTop="8dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/marker_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Description of the place."
+        android:textSize="16sp"
+        android:paddingLeft="16dp"
+        android:paddingTop="8dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"/>
+</LinearLayout>
