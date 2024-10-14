@@ -1,20 +1,27 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
+import android.annotation.SuppressLint;
+import androidx.annotation.NonNull;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -23,10 +30,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
 import org.json.JSONArray;
@@ -50,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap gMap;
     private EditText etDestination;
     private Button btnGetDirections;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setupIconClickListeners();
     }
 
+    @SuppressLint("PotentialBehaviorOverride")
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         gMap = googleMap;
@@ -119,7 +133,147 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Set zoom limits
         gMap.setMinZoomPreference(17f); // Minimum zoom level
         gMap.setMaxZoomPreference(22f); // Maximum zoom level
+
+        // Add a marker
+        LatLng location = new LatLng(14.565010891802403, 120.9932070935714);
+        LatLng location2 = new LatLng(14.5664620569781, 120.9932070935746);
+        LatLng location3 = new LatLng(14.567179107795651, 120.99289729315733);
+        LatLng location4 = new LatLng(14.56706754480281, 120.99213440937257);
+        LatLng location5 = new LatLng(14.564374938729204, 120.99384588171114);
+
+        gMap.addMarker(new MarkerOptions().position(location).title("Henry")
+                .icon(setIcon(MainActivity.this,R.drawable.henry_marker)));
+        gMap.addMarker(new MarkerOptions().position(location2).title("Goks")
+                .icon(setIcon(MainActivity.this,R.drawable.goks_marker)));
+        gMap.addMarker(new MarkerOptions().position(location3).title("Andrew")
+                .icon(setIcon(MainActivity.this,R.drawable.andrew_marker)));
+        gMap.addMarker(new MarkerOptions().position(location4).title("Razon")
+                .icon(setIcon(MainActivity.this,R.drawable.razon_marker)));
+        gMap.addMarker(new MarkerOptions().position(location5).title("La Salle Hall")
+                .icon(setIcon(MainActivity.this,R.drawable.lasallehall_marker)));
+
+        // Open the bottom dialog when a marker is clicked
+        gMap.setOnMarkerClickListener(marker -> {
+            openBottomDialog(marker.getTitle());
+            return true;
+        });
+
     }
+
+    private BitmapDescriptor setIcon(Activity context, int drawableID) {
+        Drawable drawable = ActivityCompat.getDrawable(context, drawableID);
+        if (drawable == null) return null;
+
+        int intrinsicWidth = drawable.getIntrinsicWidth();
+        int intrinsicHeight = drawable.getIntrinsicHeight();
+        int scaledWidth = intrinsicWidth / 5;
+        int scaledHeight = intrinsicHeight / 5;
+
+        Bitmap bitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        drawable.setBounds(0, 0, scaledWidth, scaledHeight);
+        drawable.draw(canvas);
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    private void openBottomDialog(String title) {
+        // 1. Create the BottomSheetDialog
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+
+        // 2. Inflate the layout (you'll create this XML layout shortly)
+        @SuppressLint("InflateParams")
+        View view = getLayoutInflater().inflate(R.layout.marker_popup, null);
+
+        // 3. Find views inside the dialog (example: title TextView)
+        TextView titleView = view.findViewById(R.id.marker_title);
+        titleView.setText(title);  // Set the marker title
+        String drawable;
+        String desc = "";
+        switch (title) {
+            case "Henry": drawable = "henry_photo";
+                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
+                        " as “Henry” among students, is a 14-story building located in " +
+                        "the middle of the campus, and is situated in between two " +
+                        "historical buildings, the St. La Salle Hall and the " +
+                        "Velasco Hall. Named after its main benefactor, business tycoon " +
+                        "Henry Sy Sr., whose generous donations jump-started the " +
+                        "project’s construction, the edifice is home to different " +
+                        "administrative and executive offices, as well as the learning " +
+                        "commons and the University’s library. The building was designed " +
+                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
+                        "\n";
+            break;
+            case "Goks": drawable = "gokongwei_photo";
+                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
+                        " as “Henry” among students, is a 14-story building located in " +
+                        "the middle of the campus, and is situated in between two " +
+                        "historical buildings, the St. La Salle Hall and the " +
+                        "Velasco Hall. Named after its main benefactor, business tycoon " +
+                        "Henry Sy Sr., whose generous donations jump-started the " +
+                        "project’s construction, the edifice is home to different " +
+                        "administrative and executive offices, as well as the learning " +
+                        "commons and the University’s library. The building was designed " +
+                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
+                        "\n";
+            break;
+            case "Andrew": drawable = "andrew_photo";
+                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
+                        " as “Henry” among students, is a 14-story building located in " +
+                        "the middle of the campus, and is situated in between two " +
+                        "historical buildings, the St. La Salle Hall and the " +
+                        "Velasco Hall. Named after its main benefactor, business tycoon " +
+                        "Henry Sy Sr., whose generous donations jump-started the " +
+                        "project’s construction, the edifice is home to different " +
+                        "administrative and executive offices, as well as the learning " +
+                        "commons and the University’s library. The building was designed " +
+                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
+                        "\n";
+            break;
+            case "Razon": drawable = "razon_photo";
+                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
+                        " as “Henry” among students, is a 14-story building located in " +
+                        "the middle of the campus, and is situated in between two " +
+                        "historical buildings, the St. La Salle Hall and the " +
+                        "Velasco Hall. Named after its main benefactor, business tycoon " +
+                        "Henry Sy Sr., whose generous donations jump-started the " +
+                        "project’s construction, the edifice is home to different " +
+                        "administrative and executive offices, as well as the learning " +
+                        "commons and the University’s library. The building was designed " +
+                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
+                        "\n";
+            break;
+            case "La Salle Hall": drawable = "lasallehall_photo";
+                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
+                        " as “Henry” among students, is a 14-story building located in " +
+                        "the middle of the campus, and is situated in between two " +
+                        "historical buildings, the St. La Salle Hall and the " +
+                        "Velasco Hall. Named after its main benefactor, business tycoon " +
+                        "Henry Sy Sr., whose generous donations jump-started the " +
+                        "project’s construction, the edifice is home to different " +
+                        "administrative and executive offices, as well as the learning " +
+                        "commons and the University’s library. The building was designed " +
+                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
+                        "\n";
+            break;
+            default: drawable = "logo_dlsu";
+                desc = "null";
+            break;
+        }
+        ImageView imageView = view.findViewById(R.id.marker_image);
+        @SuppressLint("DiscouragedApi")
+        int drawableId = getResources().getIdentifier(drawable, "drawable", getPackageName());
+        imageView.setImageResource(drawableId);
+        TextView descView = view.findViewById(R.id.marker_description);
+        descView.setText(desc);
+        // 4. Set the content view of the dialog
+        bottomSheetDialog.setContentView(view);
+
+        // 5. Show the dialog
+        bottomSheetDialog.show();
+    }
+
 
 
     private void getDirections(LatLng origin, String destination) {
@@ -227,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             );
 
             gMap.animateCamera(CameraUpdateFactory.newLatLngBounds(
-                    new com.google.android.gms.maps.model.LatLngBounds(southwest, northeast), 100));
+                    new LatLngBounds(southwest, northeast), 100));
         });
     }
 

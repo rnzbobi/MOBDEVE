@@ -143,5 +143,13 @@
         "visibility": "off"
       }
     ]
+  },
+  {
+    "featureType": "poi",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
   }
 ]
