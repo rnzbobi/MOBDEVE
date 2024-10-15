@@ -85,4 +85,14 @@ public class ProfileActivity extends AppCompatActivity {
         startActivity(intent);
         finish(); // Optional: Call finish to remove this activity from the stack
     }
+
+    public void editProfileFunction(View v) {
+        Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
+        startActivity(intent);
+    }
+
+    public void changePasswordFunction(View v) {
+        Intent intent = new Intent(ProfileActivity.this, ChangePasswordActivity.class);
+        startActivity(intent);
+    }
 }

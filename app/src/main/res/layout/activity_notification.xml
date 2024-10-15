@@ -7,10 +7,24 @@
     tools:context=".view.MainActivity">
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/notificationText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ikaw ulet bleh :p" />
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="16dp"
+        android:fontFamily="@font/roboto_bold"
+        android:text="Notifications"
+        android:textSize="36sp" />
+
+    <!-- RecyclerView for the notifications -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_notifications"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/notificationText"
+        android:layout_above="@id/icon_container"
+        android:padding="16dp" />
 
     <!-- Icon container (Horizontal layout for the icons) -->
     <LinearLayout
