@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="15dp"
+    android:background="@drawable/notification_background"
+    android:elevation="4dp"
+    android:layout_margin="8dp">
+
+    <!-- Image for the Building with a circular shape and border -->
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/building_icon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="12dp"
+        app:civ_border_width="2dp"
+        app:civ_border_color="#347000" />
+
+    <!-- Main content area: Building name, elevator waiting time, floors, and capacity -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center_vertical">
+
+        <!-- Building Name -->
+        <TextView
+            android:id="@+id/buildingName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="Building Name" />
+
+        <!-- Elevator Waiting Time -->
+        <TextView
+            android:id="@+id/elevatorTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Elevator Waiting Time"
+            android:textSize="14sp"
+            android:textColor="@android:color/black" />
+
+        <!-- Floors -->
+        <TextView
+            android:id="@+id/floors"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Floors"
+            android:textSize="14sp"
+            android:textColor="@android:color/black" />
+
+        <!-- Capacity -->
+        <TextView
+            android:id="@+id/capacity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Capacity"
+            android:textSize="14sp"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+</LinearLayout>

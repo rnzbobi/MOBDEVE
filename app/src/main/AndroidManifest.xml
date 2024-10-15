@@ -33,6 +33,9 @@
             android:name=".view.ElevatorActivity"
             android:exported="false" />
         <activity
+            android:name=".view.FilterActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.IndoorNavigationActivity"
             android:exported="false" />
         <activity
