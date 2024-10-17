@@ -6,57 +6,51 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".view.ElevatorActivity">
 
-    <!-- Header TextView -->
-    <TextView
-        android:id="@+id/header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="30dp"
-        android:layout_marginStart="16dp"
-        android:fontFamily="@font/roboto_bold"
-        android:text="Elevator Waiting Times"
-        android:textSize="25sp"
-        android:textStyle="bold" />
-
-    <!-- Filter Button and Search Bar -->
     <LinearLayout
         android:id="@+id/filter_search_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/header"
         android:layout_margin="16dp"
-        android:orientation="horizontal">
-
-        <!-- Filter Button -->
-        <Button
-            android:id="@+id/filterButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filter"
-            android:backgroundTint="#347000"
-            android:textColor="@android:color/white" />
+        android:orientation="horizontal"
+        android:layout_marginTop="15dp"
+        android:gravity="center_vertical">
 
         <!-- Search Bar -->
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
-            android:layout_marginStart="16dp"
+            android:queryHint="Search by building"
             android:iconifiedByDefault="false"
-            android:queryHint="Search by building" />
+            android:padding="8dp" />
+
+        <!-- Filter Button -->
+        <Button
+            android:id="@+id/filterButton"
+            android:layout_width="120dp"
+            android:layout_height="48dp"
+            android:text="Filter"
+            android:backgroundTint="#347000"
+            android:textColor="@android:color/white"
+            android:layout_marginEnd="16dp"
+            android:layout_gravity="center_vertical"
+            android:padding="8dp" />
+
     </LinearLayout>
+
 
     <!-- RecyclerView for the Elevator Waiting Times -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/elevatorRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="400dp"
-        android:layout_below="@id/header"
-        android:layout_marginTop="70dp"
+        android:layout_below="@id/filter_search_container"
+        android:layout_marginTop="5dp"
         android:padding="16dp"
+        android:elevation="0dp"
         android:layout_above="@id/icon_container" />
+
 
     <!-- Icon container (Horizontal layout for the icons) -->
     <LinearLayout
@@ -70,48 +64,53 @@
         <!-- Clickable icons with fixed sizes and spacing -->
         <ImageView
             android:id="@+id/map_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
             android:src="@drawable/map_icon"
             android:clickable="true"
-            android:contentDescription="Map Icon" />
+            android:contentDescription="Map Icon"/>
 
         <ImageView
             android:id="@+id/indoor_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/indoor_navigation"
             android:clickable="true"
-            android:contentDescription="Indoor Navigation Icon" />
+            android:contentDescription="Indoor Navigation Icon"/>
 
         <ImageView
             android:id="@+id/elevator_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/elevator"
             android:clickable="true"
-            android:contentDescription="Elevator Icon" />
+            android:contentDescription="Elevator Icon"/>
 
         <ImageView
             android:id="@+id/notification_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/notification"
             android:clickable="true"
-            android:contentDescription="Notification Icon" />
+            android:contentDescription="Notification Icon"/>
 
         <ImageView
             android:id="@+id/profile_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/profile"
             android:clickable="true"
-            android:contentDescription="Profile Icon" />
+            android:contentDescription="Profile Icon"/>
+
     </LinearLayout>
 
 </RelativeLayout>

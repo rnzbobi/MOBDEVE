@@ -7,7 +7,7 @@
     android:orientation="horizontal"
     android:padding="15dp"
     android:background="@drawable/notification_background"
-    android:elevation="4dp"
+    android:elevation="0dp"
     android:layout_margin="8dp">
 
     <!-- Image for the Building with a circular shape and border -->

@@ -85,45 +85,49 @@
         <!-- Clickable icons with fixed sizes and spacing -->
         <ImageView
             android:id="@+id/map_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
             android:src="@drawable/map_icon"
             android:clickable="true"
             android:contentDescription="Map Icon"/>
 
         <ImageView
             android:id="@+id/indoor_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/indoor_navigation"
             android:clickable="true"
             android:contentDescription="Indoor Navigation Icon"/>
 
         <ImageView
             android:id="@+id/elevator_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/elevator"
             android:clickable="true"
             android:contentDescription="Elevator Icon"/>
 
         <ImageView
             android:id="@+id/notification_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/notification"
             android:clickable="true"
             android:contentDescription="Notification Icon"/>
 
         <ImageView
             android:id="@+id/profile_icon"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:padding="25dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/profile"
             android:clickable="true"
             android:contentDescription="Profile Icon"/>
