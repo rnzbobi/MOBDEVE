@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -142,15 +143,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLng location5 = new LatLng(14.564374938729204, 120.99384588171114);
 
         gMap.addMarker(new MarkerOptions().position(location).title("Henry")
-                .icon(setIcon(MainActivity.this,R.drawable.henry_marker)));
+                .icon(setIcon(MainActivity.this,R.drawable.henry_marker,"Henry")));
         gMap.addMarker(new MarkerOptions().position(location2).title("Goks")
-                .icon(setIcon(MainActivity.this,R.drawable.goks_marker)));
+                .icon(setIcon(MainActivity.this,R.drawable.goks_marker, "Goks")));
         gMap.addMarker(new MarkerOptions().position(location3).title("Andrew")
-                .icon(setIcon(MainActivity.this,R.drawable.andrew_marker)));
+                .icon(setIcon(MainActivity.this,R.drawable.andrew_marker, "Andrew")));
         gMap.addMarker(new MarkerOptions().position(location4).title("Razon")
-                .icon(setIcon(MainActivity.this,R.drawable.razon_marker)));
+                .icon(setIcon(MainActivity.this,R.drawable.razon_marker, "Razon")));
         gMap.addMarker(new MarkerOptions().position(location5).title("La Salle Hall")
-                .icon(setIcon(MainActivity.this,R.drawable.lasallehall_marker)));
+                .icon(setIcon(MainActivity.this,R.drawable.lasallehall_marker, "La Salle Hall")));
 
         // Open the bottom dialog when a marker is clicked
         gMap.setOnMarkerClickListener(marker -> {
@@ -160,23 +161,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private BitmapDescriptor setIcon(Activity context, int drawableID) {
-        Drawable drawable = ActivityCompat.getDrawable(context, drawableID);
-        if (drawable == null) return null;
+    private BitmapDescriptor setIcon(Activity context, int drawableID, String title) {
+        // Inflate the custom layout
+        View markerLayout = LayoutInflater.from(context).inflate(R.layout.custom_marker, null);
 
-        int intrinsicWidth = drawable.getIntrinsicWidth();
-        int intrinsicHeight = drawable.getIntrinsicHeight();
-        int scaledWidth = intrinsicWidth / 5;
-        int scaledHeight = intrinsicHeight / 5;
+        // Set the marker image
+        ImageView markerImage = markerLayout.findViewById(R.id.marker_image);
+        markerImage.setImageResource(drawableID);
 
-        Bitmap bitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
+        // Set the title text
+        TextView markerTitle = markerLayout.findViewById(R.id.marker_title);
+        markerTitle.setText(title);
+
+        // Measure and layout the view
+        markerLayout.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        markerLayout.layout(0, 0, markerLayout.getMeasuredWidth(), markerLayout.getMeasuredHeight());
+
+        // Create a bitmap from the view
+        Bitmap bitmap = Bitmap.createBitmap(markerLayout.getMeasuredWidth(), markerLayout.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
-
-        drawable.setBounds(0, 0, scaledWidth, scaledHeight);
-        drawable.draw(canvas);
+        markerLayout.draw(canvas);
 
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
+
 
     private void openBottomDialog(String title) {
         // 1. Create the BottomSheetDialog

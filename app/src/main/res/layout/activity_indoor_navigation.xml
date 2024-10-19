@@ -6,11 +6,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".view.MainActivity">
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ACEMERE VILLENA SABOG NA KAKACODE, ITO PA GAGAWIN MO LOL!" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/navRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/icon_container" />
+
 
     <!-- Icon container (Horizontal layout for the icons) -->
     <LinearLayout
@@ -29,7 +30,7 @@
             android:padding="10dp"
             android:src="@drawable/map_icon"
             android:clickable="true"
-            android:contentDescription="Map Icon"/>
+            android:contentDescription="Map Icon" />
 
         <ImageView
             android:id="@+id/indoor_icon"

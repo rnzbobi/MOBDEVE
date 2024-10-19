@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    android:background="@drawable/indoornavigation_background"
+    android:gravity="center"
+    android:orientation="vertical">
+
+<com.google.android.material.imageview.ShapeableImageView
+    android:id="@+id/buildingIcon"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    app:shapeAppearanceOverlay="@style/RoundedImageStyle"
+    android:scaleType="centerCrop"
+    android:layout_marginTop="8dp"/>  <!-- Ensures the image fills the view -->
+
+    <TextView
+        android:id="@+id/buildingName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-black"
+        android:gravity="center"
+        android:text="buildingName"
+        android:textColor="@color/green"
+        android:textSize="24sp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"/>
+
+</LinearLayout>
