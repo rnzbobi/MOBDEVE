@@ -1,5 +1,6 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
+import com.mobdeve.s17.mobdeve.animoquest.project.BuildConfig;
 import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import android.app.Activity;
@@ -58,7 +59,7 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "MainActivity";
-    private static final String API_KEY = "AIzaSyBj61zucmzuoczsR7JbHmYPhdmRPDPndbU";
+    private static final String API_KEY = BuildConfig.DIRECTIONS_API_KEY;
     private GoogleMap gMap;
     private EditText etDestination;
     private Button btnGetDirections;
