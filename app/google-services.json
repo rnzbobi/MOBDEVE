@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "767907528107",
+    "project_id": "animoquest-c89ff",
+    "storage_bucket": "animoquest-c89ff.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:767907528107:android:8847b075ddc1783a2aa6ee",
+        "android_client_info": {
+          "package_name": "com.mobdeve.s17.mobdeve.animoquest.project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlaQO-yG-qsKd949Au70ySfZHhGCmbvD0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
