@@ -1,4 +1,5 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.MarkerInfo;
 
 import com.mobdeve.s17.mobdeve.animoquest.project.BuildConfig;
 import android.annotation.SuppressLint;
@@ -37,9 +38,15 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
 import org.json.JSONArray;
@@ -56,6 +63,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "MainActivity";
@@ -63,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap gMap;
     private EditText etDestination;
     private Button btnGetDirections;
+    private DatabaseReference markersRef;
 
 
 
@@ -71,6 +80,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        // Initialize Firebase Database reference with the correct database URL
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://animoquest-c89ff-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        markersRef = database.getReference("markers");
+
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -89,23 +104,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.e(TAG, "Error - Map Fragment was null!");
         }
 
+
         // New feature: Input and button for searching directions
         etDestination = findViewById(R.id.et_destination);
         btnGetDirections = findViewById(R.id.btn_get_directions);
 
-        btnGetDirections.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String destination = etDestination.getText().toString().trim();
-                if (!destination.isEmpty()) {
-                    LatLng origin = new LatLng(14.5647, 120.99313); // DLSU Coordinates
-                    getDirections(origin, destination);
-                } else {
-                    Toast.makeText(MainActivity.this, "Please enter a destination", Toast.LENGTH_SHORT).show();
-                }
+        btnGetDirections.setOnClickListener(v -> {
+            String destination = etDestination.getText().toString().trim();
+            if (!destination.isEmpty()) {
+                LatLng origin = new LatLng(14.5647, 120.99313); // DLSU Coordinates
+                getDirections(origin, destination);
+            } else {
+                Toast.makeText(MainActivity.this, "Please enter a destination", Toast.LENGTH_SHORT).show();
             }
         });
-
         // Set up existing icon click listeners
         setupIconClickListeners();
     }
@@ -136,49 +148,76 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         gMap.setMinZoomPreference(17f); // Minimum zoom level
         gMap.setMaxZoomPreference(22f); // Maximum zoom level
 
-        // Add a marker
-        LatLng location = new LatLng(14.565010891802403, 120.9932070935714);
-        LatLng location2 = new LatLng(14.5664620569781, 120.9932070935746);
-        LatLng location3 = new LatLng(14.567179107795651, 120.99289729315733);
-        LatLng location4 = new LatLng(14.56706754480281, 120.99213440937257);
-        LatLng location5 = new LatLng(14.564374938729204, 120.99384588171114);
-
-        gMap.addMarker(new MarkerOptions().position(location).title("Henry")
-                .icon(setIcon(MainActivity.this,R.drawable.henry_marker,"Henry")));
-        gMap.addMarker(new MarkerOptions().position(location2).title("Goks")
-                .icon(setIcon(MainActivity.this,R.drawable.goks_marker, "Goks")));
-        gMap.addMarker(new MarkerOptions().position(location3).title("Andrew")
-                .icon(setIcon(MainActivity.this,R.drawable.andrew_marker, "Andrew")));
-        gMap.addMarker(new MarkerOptions().position(location4).title("Razon")
-                .icon(setIcon(MainActivity.this,R.drawable.razon_marker, "Razon")));
-        gMap.addMarker(new MarkerOptions().position(location5).title("La Salle Hall")
-                .icon(setIcon(MainActivity.this,R.drawable.lasallehall_marker, "La Salle Hall")));
-
-        // Open the bottom dialog when a marker is clicked
-        gMap.setOnMarkerClickListener(marker -> {
-            openBottomDialog(marker.getTitle());
-            return true;
-        });
-
+        // Load markers from Firebase
+        loadMarkersFromFirebase();
     }
 
+    private void loadMarkersFromFirebase() {
+        markersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                gMap.clear();
+                for (DataSnapshot markerSnapshot : dataSnapshot.getChildren()) {
+                    String title = markerSnapshot.child("name").getValue(String.class);
+                    Double latitude = markerSnapshot.child("latitude").getValue(Double.class);
+                    Double longitude = markerSnapshot.child("longitude").getValue(Double.class);
+                    String description = markerSnapshot.child("description").getValue(String.class);
+                    String iconResourceName = markerSnapshot.child("iconResource").getValue(String.class);
+                    String drawableName = markerSnapshot.child("drawable").getValue(String.class);
+
+                    if (latitude == null || longitude == null) {
+                        Log.e(TAG, "Latitude or Longitude is null for marker: " + title);
+                        continue;
+                    }
+
+                    LatLng position = new LatLng(latitude, longitude);
+
+                    int iconResId = getResources().getIdentifier(iconResourceName, "drawable", getPackageName());
+                    if (iconResId == 0) {
+                        Log.e(TAG, "Icon resource not found for name: " + iconResourceName + ". Using default icon.");
+                        iconResId = R.drawable.map_icon; // Replace with your default icon
+                    }
+
+                    // Add marker to the map with the specific icon
+                    Marker marker = gMap.addMarker(new MarkerOptions()
+                            .position(position)
+                            .title(title)
+                            .icon(setIcon(MainActivity.this, iconResId, title)));
+
+                    // Store MarkerInfo in the marker's tag
+                    if (marker != null) {
+                        MarkerInfo markerInfo = new MarkerInfo(description, drawableName);
+                        marker.setTag(markerInfo);
+                    }
+                }
+
+                gMap.setOnMarkerClickListener(marker -> {
+                    openBottomDialog(marker.getTitle(), (MarkerInfo) marker.getTag());
+                    return true;
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e(TAG, "Failed to load markers: ", databaseError.toException());
+                Toast.makeText(MainActivity.this, "Failed to load markers", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
     private BitmapDescriptor setIcon(Activity context, int drawableID, String title) {
-        // Inflate the custom layout
         View markerLayout = LayoutInflater.from(context).inflate(R.layout.custom_marker, null);
 
-        // Set the marker image
         ImageView markerImage = markerLayout.findViewById(R.id.marker_image);
         markerImage.setImageResource(drawableID);
 
-        // Set the title text
         TextView markerTitle = markerLayout.findViewById(R.id.marker_title);
         markerTitle.setText(title);
 
-        // Measure and layout the view
         markerLayout.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         markerLayout.layout(0, 0, markerLayout.getMeasuredWidth(), markerLayout.getMeasuredHeight());
 
-        // Create a bitmap from the view
         Bitmap bitmap = Bitmap.createBitmap(markerLayout.getMeasuredWidth(), markerLayout.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         markerLayout.draw(canvas);
@@ -187,99 +226,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    private void openBottomDialog(String title) {
-        // 1. Create the BottomSheetDialog
+    private void openBottomDialog(String title, MarkerInfo markerInfo) {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
 
-        // 2. Inflate the layout (you'll create this XML layout shortly)
         @SuppressLint("InflateParams")
         View view = getLayoutInflater().inflate(R.layout.marker_popup, null);
 
-        // 3. Find views inside the dialog (example: title TextView)
         TextView titleView = view.findViewById(R.id.marker_title);
-        titleView.setText(title);  // Set the marker title
-        String drawable;
-        String desc = "";
-        switch (title) {
-            case "Henry": drawable = "henry_photo";
-                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
-                        " as “Henry” among students, is a 14-story building located in " +
-                        "the middle of the campus, and is situated in between two " +
-                        "historical buildings, the St. La Salle Hall and the " +
-                        "Velasco Hall. Named after its main benefactor, business tycoon " +
-                        "Henry Sy Sr., whose generous donations jump-started the " +
-                        "project’s construction, the edifice is home to different " +
-                        "administrative and executive offices, as well as the learning " +
-                        "commons and the University’s library. The building was designed " +
-                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
-                        "\n";
-            break;
-            case "Goks": drawable = "gokongwei_photo";
-                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
-                        " as “Henry” among students, is a 14-story building located in " +
-                        "the middle of the campus, and is situated in between two " +
-                        "historical buildings, the St. La Salle Hall and the " +
-                        "Velasco Hall. Named after its main benefactor, business tycoon " +
-                        "Henry Sy Sr., whose generous donations jump-started the " +
-                        "project’s construction, the edifice is home to different " +
-                        "administrative and executive offices, as well as the learning " +
-                        "commons and the University’s library. The building was designed " +
-                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
-                        "\n";
-            break;
-            case "Andrew": drawable = "andrew_photo";
-                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
-                        " as “Henry” among students, is a 14-story building located in " +
-                        "the middle of the campus, and is situated in between two " +
-                        "historical buildings, the St. La Salle Hall and the " +
-                        "Velasco Hall. Named after its main benefactor, business tycoon " +
-                        "Henry Sy Sr., whose generous donations jump-started the " +
-                        "project’s construction, the edifice is home to different " +
-                        "administrative and executive offices, as well as the learning " +
-                        "commons and the University’s library. The building was designed " +
-                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
-                        "\n";
-            break;
-            case "Razon": drawable = "razon_photo";
-                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
-                        " as “Henry” among students, is a 14-story building located in " +
-                        "the middle of the campus, and is situated in between two " +
-                        "historical buildings, the St. La Salle Hall and the " +
-                        "Velasco Hall. Named after its main benefactor, business tycoon " +
-                        "Henry Sy Sr., whose generous donations jump-started the " +
-                        "project’s construction, the edifice is home to different " +
-                        "administrative and executive offices, as well as the learning " +
-                        "commons and the University’s library. The building was designed " +
-                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
-                        "\n";
-            break;
-            case "La Salle Hall": drawable = "lasallehall_photo";
-                desc = "The Henry Sy Sr. Hall, abbreviated as HSSH and more widely known" +
-                        " as “Henry” among students, is a 14-story building located in " +
-                        "the middle of the campus, and is situated in between two " +
-                        "historical buildings, the St. La Salle Hall and the " +
-                        "Velasco Hall. Named after its main benefactor, business tycoon " +
-                        "Henry Sy Sr., whose generous donations jump-started the " +
-                        "project’s construction, the edifice is home to different " +
-                        "administrative and executive offices, as well as the learning " +
-                        "commons and the University’s library. The building was designed " +
-                        "by the renowned architectural firm, Leandro V. Locsin Partners.\n" +
-                        "\n";
-            break;
-            default: drawable = "logo_dlsu";
-                desc = "null";
-            break;
-        }
-        ImageView imageView = view.findViewById(R.id.marker_image);
-        @SuppressLint("DiscouragedApi")
-        int drawableId = getResources().getIdentifier(drawable, "drawable", getPackageName());
-        imageView.setImageResource(drawableId);
-        TextView descView = view.findViewById(R.id.marker_description);
-        descView.setText(desc);
-        // 4. Set the content view of the dialog
-        bottomSheetDialog.setContentView(view);
+        titleView.setText(title);
 
-        // 5. Show the dialog
+        TextView descView = view.findViewById(R.id.marker_description);
+        descView.setText(markerInfo.getDescription());
+
+        ImageView imageView = view.findViewById(R.id.marker_image);
+
+        // Get the drawable resource ID
+        int imageResId = getResources().getIdentifier(markerInfo.getDrawableName(), "drawable", getPackageName());
+
+        if (imageResId != 0) {
+            imageView.setImageResource(imageResId);
+        } else {
+            // If the drawable is not found, you can set a default image or hide the ImageView
+            imageView.setImageResource(R.drawable.map_icon); // Replace with your default image
+        }
+
+        bottomSheetDialog.setContentView(view);
         bottomSheetDialog.show();
     }
 

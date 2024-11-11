@@ -56,6 +56,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("com.google.firebase:firebase-database:21.0.0")
+    implementation("com.google.firebase:firebase-bom:31.2.0")
     implementation("com.google.android.gms:play-services-maps:19.0.0")
     implementation("com.google.maps.android:android-maps-utils:2.3.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
@@ -66,3 +68,5 @@ dependencies {
     implementation("com.google.android.material:material:1.4.0")
     implementation("com.google.android.material:material:1.10.0")
 }
+
+apply(plugin = "com.google.gms.google-services")
