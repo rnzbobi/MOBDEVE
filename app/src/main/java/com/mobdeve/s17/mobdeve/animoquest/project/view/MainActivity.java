@@ -1,9 +1,12 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
-import com.mobdeve.s17.mobdeve.animoquest.project.model.MarkerInfo;
 
 import com.mobdeve.s17.mobdeve.animoquest.project.BuildConfig;
+import com.mobdeve.s17.mobdeve.animoquest.project.R;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.MarkerInfo;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.AutocompleteSuggestionAdapter;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.PlaceItem;
+
 import android.annotation.SuppressLint;
-import androidx.annotation.NonNull;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -11,8 +14,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,57 +27,84 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import android.view.inputmethod.EditorInfo;
+import android.view.KeyEvent;
+import android.view.inputmethod.InputMethodManager;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
 import com.google.firebase.database.ValueEventListener;
-import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "MainActivity";
     private static final String API_KEY = BuildConfig.DIRECTIONS_API_KEY;
+
     private GoogleMap gMap;
     private EditText etDestination;
     private Button btnGetDirections;
     private DatabaseReference markersRef;
+    private LatLng selectedDestinationLatLng;
+    private RecyclerView rvAutocompleteSuggestions;
+    private AutocompleteSuggestionAdapter autocompleteSuggestionAdapter;
 
+    // Fields to keep track of the route polyline and markers
+    private Polyline currentPolyline;
+    private Marker originMarker;
+    private Marker destinationMarker;
 
+    // Field to keep track of Firebase markers
+    private List<Marker> firebaseMarkers = new ArrayList<>();
+
+    // List to store all PlaceItems from Firebase
+    private List<PlaceItem> allPlaceItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +112,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // Initialize Firebase Database reference with the correct database URL
+        // Initialize Firebase Database reference
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://animoquest-c89ff-default-rtdb.asia-southeast1.firebasedatabase.app/");
         markersRef = database.getReference("markers");
-
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -104,22 +134,124 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.e(TAG, "Error - Map Fragment was null!");
         }
 
-
-        // New feature: Input and button for searching directions
+        // Initialize UI components
         etDestination = findViewById(R.id.et_destination);
         btnGetDirections = findViewById(R.id.btn_get_directions);
+        rvAutocompleteSuggestions = findViewById(R.id.rv_autocomplete_suggestions);
 
-        btnGetDirections.setOnClickListener(v -> {
-            String destination = etDestination.getText().toString().trim();
-            if (!destination.isEmpty()) {
-                LatLng origin = new LatLng(14.5647, 120.99313); // DLSU Coordinates
-                getDirections(origin, destination);
-            } else {
-                Toast.makeText(MainActivity.this, "Please enter a destination", Toast.LENGTH_SHORT).show();
+        // Set up RecyclerView for autocomplete suggestions
+        autocompleteSuggestionAdapter = new AutocompleteSuggestionAdapter(placeItem -> {
+            // Handle the user selection
+            etDestination.setText(placeItem.getName());
+            rvAutocompleteSuggestions.setVisibility(View.GONE);
+
+            // Set the selected destination coordinates
+            selectedDestinationLatLng = new LatLng(placeItem.getLatitude(), placeItem.getLongitude());
+        });
+
+        rvAutocompleteSuggestions.setLayoutManager(new LinearLayoutManager(this));
+        rvAutocompleteSuggestions.setAdapter(autocompleteSuggestionAdapter);
+
+        // Fetch places from Firebase
+        fetchPlacesFromFirebase();
+
+        // Set up TextWatcher for the EditText
+        etDestination.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // No action needed before text changed
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    rvAutocompleteSuggestions.setVisibility(View.VISIBLE);
+                    getAutocompletePredictions(s.toString());
+                } else {
+                    rvAutocompleteSuggestions.setVisibility(View.GONE);
+                    autocompleteSuggestionAdapter.clearPlaceItems();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // No action needed after text changed
             }
         });
+
+        // Add OnEditorActionListener to the EditText
+        etDestination.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                    actionId == EditorInfo.IME_ACTION_DONE ||
+                    (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)) {
+
+                // Trigger the same action as the "Start Navigation" button
+                startNavigation();
+
+                // Hide the keyboard
+                hideKeyboard();
+
+                return true;
+            }
+            return false;
+        });
+
+        // Modify the button click listener
+        btnGetDirections.setOnClickListener(v -> {
+            startNavigation();
+        });
+
         // Set up existing icon click listeners
         setupIconClickListeners();
+    }
+
+    private void fetchPlacesFromFirebase() {
+        DatabaseReference placesRef = FirebaseDatabase.getInstance().getReference("places");
+
+        placesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                allPlaceItems.clear();
+                for (DataSnapshot placeSnapshot : snapshot.getChildren()) {
+                    PlaceItem placeItem = placeSnapshot.getValue(PlaceItem.class);
+                    if (placeItem != null) {
+                        allPlaceItems.add(placeItem);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to fetch places: ", error.toException());
+            }
+        });
+    }
+
+    private void startNavigation() {
+        if (selectedDestinationLatLng != null) {
+            LatLng origin = new LatLng(14.5647, 120.99313); // DLSU Coordinates
+            getDirections(origin, selectedDestinationLatLng);
+        } else {
+            Toast.makeText(MainActivity.this, "Please select a destination", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    private void getAutocompletePredictions(String query) {
+        List<PlaceItem> filteredPlaceItems = new ArrayList<>();
+        for (PlaceItem placeItem : allPlaceItems) {
+            if (placeItem.getName().toLowerCase().contains(query.toLowerCase())) {
+                filteredPlaceItems.add(placeItem);
+            }
+        }
+        autocompleteSuggestionAdapter.setPlaceItems(filteredPlaceItems);
     }
 
     @SuppressLint("PotentialBehaviorOverride")
@@ -156,7 +288,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         markersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                gMap.clear();
+                // Remove existing Firebase markers from the map
+                for (Marker marker : firebaseMarkers) {
+                    marker.remove();
+                }
+                firebaseMarkers.clear();
+
                 for (DataSnapshot markerSnapshot : dataSnapshot.getChildren()) {
                     String title = markerSnapshot.child("name").getValue(String.class);
                     Double latitude = markerSnapshot.child("latitude").getValue(Double.class);
@@ -188,10 +325,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if (marker != null) {
                         MarkerInfo markerInfo = new MarkerInfo(description, drawableName);
                         marker.setTag(markerInfo);
+                        // Add marker to the list of Firebase markers
+                        firebaseMarkers.add(marker);
                     }
                 }
 
+                // Set marker click listener
                 gMap.setOnMarkerClickListener(marker -> {
+                    // Check if the marker is origin or destination to prevent interfering with route markers
+                    if (marker.equals(originMarker) || marker.equals(destinationMarker)) {
+                        return false;
+                    }
                     openBottomDialog(marker.getTitle(), (MarkerInfo) marker.getTag());
                     return true;
                 });
@@ -204,7 +348,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
-
 
     private BitmapDescriptor setIcon(Activity context, int drawableID, String title) {
         View markerLayout = LayoutInflater.from(context).inflate(R.layout.custom_marker, null);
@@ -224,7 +367,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
-
 
     private void openBottomDialog(String title, MarkerInfo markerInfo) {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
@@ -254,14 +396,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         bottomSheetDialog.show();
     }
 
-
-
-    private void getDirections(LatLng origin, String destination) {
+    private void getDirections(LatLng origin, LatLng destination) {
         OkHttpClient client = new OkHttpClient();
 
         String url = "https://maps.googleapis.com/maps/api/directions/json" +
                 "?origin=" + origin.latitude + "," + origin.longitude +
-                "&destination=" + destination +
+                "&destination=" + destination.latitude + "," + destination.longitude +
                 "&mode=walking" +
                 "&alternatives=true" +
                 "&key=" + API_KEY;
@@ -338,32 +478,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void drawRouteOnMap(List<LatLng> path, LatLng origin, String destination) {
+    private void drawRouteOnMap(List<LatLng> path, LatLng origin, LatLng destination) {
         runOnUiThread(() -> {
-            gMap.clear();
+            // Remove previous route polyline if it exists
+            if (currentPolyline != null) {
+                currentPolyline.remove();
+            }
+
+            // Remove previous origin/destination markers if they exist
+            if (originMarker != null) {
+                originMarker.remove();
+            }
+            if (destinationMarker != null) {
+                destinationMarker.remove();
+            }
+
+            // Draw the polyline for the route
             PolylineOptions polylineOptions = new PolylineOptions()
                     .addAll(path)
                     .width(10)
                     .color(Color.rgb(255, 165, 0)); // Orange color
 
-            gMap.addPolyline(polylineOptions);
+            currentPolyline = gMap.addPolyline(polylineOptions);
 
-            gMap.addMarker(new MarkerOptions().position(origin).title("Start"));
-            gMap.addMarker(new MarkerOptions().position(path.get(path.size() - 1)).title(destination));
+            originMarker = gMap.addMarker(new MarkerOptions()
+                    .position(origin)
+                    .title("Start")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))); // Custom green marker
 
-            LatLng southwest = new LatLng(
-                    Math.min(origin.latitude, path.get(path.size() - 1).latitude),
-                    Math.min(origin.longitude, path.get(path.size() - 1).longitude)
-            );
-            LatLng northeast = new LatLng(
-                    Math.max(origin.latitude, path.get(path.size() - 1).latitude),
-                    Math.max(origin.longitude, path.get(path.size() - 1).longitude)
-            );
+            // Set the camera view to show the entire route
+            LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+            boundsBuilder.include(origin);
+            boundsBuilder.include(destination);
+            for (LatLng point : path) {
+                boundsBuilder.include(point);
+            }
 
-            gMap.animateCamera(CameraUpdateFactory.newLatLngBounds(
-                    new LatLngBounds(southwest, northeast), 100));
+            LatLngBounds bounds = boundsBuilder.build();
+            int padding = 100; // Offset from edges of the map in pixels
+            gMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
         });
     }
+
+
 
     // Function to decode polyline points
     private List<LatLng> decodePolyline(String encoded) {
