@@ -1,4 +1,4 @@
-package com.mobdeve.s17.mobdeve.animoquest.project.view;
+package com.mobdeve.s17.mobdeve.animoquest.project.model;
 
 public class NotificationHolder {
     private String title;

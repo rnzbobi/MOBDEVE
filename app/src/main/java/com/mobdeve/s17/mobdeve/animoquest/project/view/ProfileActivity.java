@@ -3,18 +3,36 @@ package com.mobdeve.s17.mobdeve.animoquest.project.view;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
 public class ProfileActivity extends AppCompatActivity {
+
+    TextView fullNameText, emailText;
+    ImageView profileImage;
+    String profilePictureUrl;
+    DatabaseReference databaseReference;
+    FirebaseUser currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +44,21 @@ public class ProfileActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        fullNameText = findViewById(R.id.fullNameText);
+        emailText = findViewById(R.id.emailText);
+        profileImage = findViewById(R.id.profile_image);
+
+        profilePictureUrl = getIntent().getStringExtra("profilePictureUrl");
+
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
+
+        if(currentUser != null) {
+            loadUserProfile();
+        } else {
+            Toast.makeText(this, "User not signed in", Toast.LENGTH_SHORT).show();
+        }
 
         // Set the indoor_icon to green
         ImageView profileIcon = findViewById(R.id.profile_icon);
@@ -94,5 +127,56 @@ public class ProfileActivity extends AppCompatActivity {
     public void changePasswordFunction(View v) {
         Intent intent = new Intent(ProfileActivity.this, ChangePasswordActivity.class);
         startActivity(intent);
+    }
+
+    public void signOutFunction(View v) {
+        FirebaseAuth.getInstance().signOut();
+
+        Intent intent = new Intent(ProfileActivity.this, OnboardingActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void loadUserProfile() {
+        String uid = currentUser.getUid();
+
+        // Retrieve user data from Firebase Realtime Database
+        databaseReference.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    // Retrieve user details
+                    String firstName = snapshot.child("firstName").getValue(String.class);
+                    String lastName = snapshot.child("lastName").getValue(String.class);
+                    String email = snapshot.child("email").getValue(String.class);
+                    String profilePictureUrl = snapshot.child("profilePictureUrl").getValue(String.class);
+
+                    // Update UI with the user's full name and email
+                    fullNameText.setText((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : ""));
+                    emailText.setText(email != null ? email : "");
+
+                    // Load profile image if a URL is available
+                    if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
+                        Glide.with(ProfileActivity.this)
+                                .load(profilePictureUrl)
+                                .placeholder(R.drawable.profile_placeholder) // Placeholder image while loading
+                                .error(R.drawable.profile_placeholder) // Fallback image if URL fails to load
+                                .into(profileImage);
+                    } else {
+                        // Set default placeholder if no profile picture URL is provided
+                        profileImage.setImageResource(R.drawable.profile_placeholder);
+                    }
+                } else {
+                    Log.d("ProfileActivity", "User data not found in database");
+                    Toast.makeText(ProfileActivity.this, "User data not found", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ProfileActivity", "Database error: " + error.getMessage());
+                Toast.makeText(ProfileActivity.this, "Failed to load user data", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

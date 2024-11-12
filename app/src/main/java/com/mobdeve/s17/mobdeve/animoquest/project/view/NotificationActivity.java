@@ -1,6 +1,5 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
-import android.app.Notification;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.NotificationHolder;
 
 public class NotificationActivity extends AppCompatActivity {
 

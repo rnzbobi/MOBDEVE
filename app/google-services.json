@@ -13,7 +13,20 @@
           "package_name": "com.mobdeve.s17.mobdeve.animoquest.project"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "767907528107-vce03hmcgmceg3b84s7u77jhptsunoti.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mobdeve.s17.mobdeve.animoquest.project",
+            "certificate_hash": "420963130d21b5f54e3f349cdfd31d3b4df2e6d4"
+          }
+        },
+        {
+          "client_id": "767907528107-a1qj5uiqfkqvi3l70ftr8ul2bo9ac7a9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDlaQO-yG-qsKd949Au70ySfZHhGCmbvD0"
@@ -21,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "767907528107-a1qj5uiqfkqvi3l70ftr8ul2bo9ac7a9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -1,6 +1,5 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
-import android.app.Notification;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.NotificationHolder;
 
 import java.util.List;
 

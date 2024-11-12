@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private EditText etDestination;
     private Button btnGetDirections;
     private DatabaseReference markersRef;
+    private String profilePictureUrl;
 
 
 
@@ -80,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+       profilePictureUrl = getIntent().getStringExtra("profilePictureUrl");
 
         // Initialize Firebase Database reference with the correct database URL
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://animoquest-c89ff-default-rtdb.asia-southeast1.firebasedatabase.app/");
@@ -411,7 +414,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         notificationIcon.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, NotificationActivity.class)));
 
         ImageView profileIcon = findViewById(R.id.profile_icon);
-        profileIcon.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
+        profileIcon.setOnClickListener(v -> {
+            // Create an intent to open ProfileActivity and pass user data
+            Intent profileIntent = new Intent(MainActivity.this, ProfileActivity.class);
+            profileIntent.putExtra("profilePictureUrl", profilePictureUrl);
+            startActivity(profileIntent);
+        });
     }
 
     @Override
