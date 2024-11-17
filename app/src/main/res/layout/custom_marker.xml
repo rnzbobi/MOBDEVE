@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/marker_image"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_gravity="center" />
 
     <TextView

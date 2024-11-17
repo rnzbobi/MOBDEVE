@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="green">#214b07</color>
     <color name="dlsugreen">#087830</color>
+    <color name="red">#F44336</color>
 </resources>
