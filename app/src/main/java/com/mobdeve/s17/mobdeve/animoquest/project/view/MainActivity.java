@@ -311,14 +311,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         gMap.setBuildingsEnabled(false);
         gMap.setMapType(GoogleMap.MAP_TYPE_NONE);
 
-        // Enable the My Location layer if permissions are granted (optional)
-        // Remove or comment out if not needed
-        /*
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            gMap.setMyLocationEnabled(true);
-        }
-        */
 
         try {
             boolean success = gMap.setMapStyle(
@@ -636,9 +628,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             currentPolyline = gMap.addPolyline(polylineOptions);
 
-            destinationMarker = gMap.addMarker(new MarkerOptions()
-                    .position(destination)
-                    .title("Destination")
+            originMarker = gMap.addMarker(new MarkerOptions()
+                    .position(origin)
+                    .title("start")
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                     .zIndex(3f));
 
