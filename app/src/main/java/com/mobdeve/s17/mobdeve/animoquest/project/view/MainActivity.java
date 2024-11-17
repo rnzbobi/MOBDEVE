@@ -1,9 +1,10 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.mobdeve.s17.mobdeve.animoquest.project.BuildConfig;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
-import com.mobdeve.s17.mobdeve.animoquest.project.model.MarkerInfo;
 import com.mobdeve.s17.mobdeve.animoquest.project.model.AutocompleteSuggestionAdapter;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.MarkerInfo;
 import com.mobdeve.s17.mobdeve.animoquest.project.model.PlaceItem;
 
 import android.annotation.SuppressLint;
@@ -20,11 +21,15 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.KeyEvent;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -34,9 +39,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.inputmethod.EditorInfo;
-import android.view.KeyEvent;
-import android.view.inputmethod.InputMethodManager;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -47,8 +49,8 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -105,6 +107,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // List to store all PlaceItems from Firebase
     private List<PlaceItem> allPlaceItems = new ArrayList<>();
+
+    // Declare the ValueEventListener for real-time updates
+    private ValueEventListener markersListener;
+
+    // Navigation state flag
+    private boolean isNavigating = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,8 +193,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     actionId == EditorInfo.IME_ACTION_DONE ||
                     (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN)) {
 
-                // Trigger the same action as the "Start Navigation" button
-                startNavigation();
+                // Trigger the toggle navigation action
+                toggleNavigation();
 
                 // Hide the keyboard
                 hideKeyboard();
@@ -196,9 +204,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return false;
         });
 
-        // Modify the button click listener
+        // Modify the button click listener to toggle navigation
         btnGetDirections.setOnClickListener(v -> {
-            startNavigation();
+            toggleNavigation();
         });
 
         // Set up existing icon click listeners
@@ -227,6 +235,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    private void toggleNavigation() {
+        if (!isNavigating) {
+            // Start Navigation
+            startNavigation();
+            // Update button appearance
+            btnGetDirections.setText("Stop Navigation");
+            btnGetDirections.setBackgroundTintList(getResources().getColorStateList(R.color.red)); // Ensure you have a red color defined
+            isNavigating = true;
+        } else {
+            // Stop Navigation
+            stopNavigation();
+            // Update button appearance
+            btnGetDirections.setText("Start Navigation");
+            btnGetDirections.setBackgroundTintList(getResources().getColorStateList(R.color.dlsugreen)); // Original color
+            isNavigating = false;
+        }
+    }
+
     private void startNavigation() {
         if (selectedDestinationLatLng != null) {
             LatLng origin = new LatLng(14.5647, 120.99313); // DLSU Coordinates
@@ -234,6 +260,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else {
             Toast.makeText(MainActivity.this, "Please select a destination", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void stopNavigation() {
+        runOnUiThread(() -> {
+            // Remove the polyline
+            if (currentPolyline != null) {
+                currentPolyline.remove();
+                currentPolyline = null;
+            }
+
+            // Remove origin marker
+            if (originMarker != null) {
+                originMarker.remove();
+                originMarker = null;
+            }
+
+            // Remove destination marker
+            if (destinationMarker != null) {
+                destinationMarker.remove();
+                destinationMarker = null;
+            }
+
+            Toast.makeText(MainActivity.this, "Navigation Stopped", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void hideKeyboard() {
@@ -258,6 +308,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         gMap = googleMap;
+        gMap.setBuildingsEnabled(false);
+        gMap.setMapType(GoogleMap.MAP_TYPE_NONE);
+
+        // Enable the My Location layer if permissions are granted (optional)
+        // Remove or comment out if not needed
+        /*
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            gMap.setMyLocationEnabled(true);
+        }
+        */
 
         try {
             boolean success = gMap.setMapStyle(
@@ -271,21 +332,53 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.e(TAG, "Can't find style. Error: ", e);
         }
 
+        // Define the bounds for camera movement (using the same bounds as your ground overlay)
+        LatLngBounds DLSU_BOUNDS = new LatLngBounds(
+                new LatLng(14.56414, 120.9912),  // Southwest corner
+                new LatLng(14.56814, 120.9943)   // Northeast corner
+        );
+
+        // Restrict the camera target to the DLSU bounds
+        gMap.setLatLngBoundsForCameraTarget(DLSU_BOUNDS);
+
         // Set initial camera position (DLSU)
-        LatLng initialPosition = new LatLng(14.5647, 120.99313);
-        float initialZoomLevel = 19f; // Initial zoom level
+        LatLng initialPosition = new LatLng(14.5662, 120.9928);
+        float initialZoomLevel = 17f;
         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPosition, initialZoomLevel));
 
         // Set zoom limits
-        gMap.setMinZoomPreference(17f); // Minimum zoom level
-        gMap.setMaxZoomPreference(22f); // Maximum zoom level
+        gMap.setMinZoomPreference(15f);
+        gMap.setMaxZoomPreference(22f);
+
+        // Add Ground Overlay for newmap.png
+        addGroundOverlay();
 
         // Load markers from Firebase
         loadMarkersFromFirebase();
     }
 
+    private void addGroundOverlay() {
+        // Define the bounds where the overlay should be placed
+        LatLngBounds overlayBounds = new LatLngBounds(
+                new LatLng(14.56334, 120.9892), // Southwest corner
+                new LatLng(14.56894, 120.9963)  // Northeast corner
+        );
+
+        // Create GroundOverlayOptions object
+        GroundOverlayOptions groundOverlayOptions = new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(R.drawable.newmap)) // Your newmap.png
+                .positionFromBounds(overlayBounds)
+                .bearing(-2f)
+                .transparency(0f) // Adjust transparency if needed (0f = opaque, 1f = transparent)
+                .zIndex(1f); // Set zIndex lower than polylines and markers
+
+        // Add the ground overlay to the map
+        gMap.addGroundOverlay(groundOverlayOptions);
+    }
+
     private void loadMarkersFromFirebase() {
-        markersRef.addValueEventListener(new ValueEventListener() {
+        // Initialize the markersListener
+        markersListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Remove existing Firebase markers from the map
@@ -315,13 +408,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         iconResId = R.drawable.map_icon; // Replace with your default icon
                     }
 
-                    // Add marker to the map with the specific icon
-                    Marker marker = gMap.addMarker(new MarkerOptions()
+                    // Regular marker
+                    MarkerOptions markerOptions = new MarkerOptions()
                             .position(position)
                             .title(title)
-                            .icon(setIcon(MainActivity.this, iconResId, title)));
+                            .icon(setIcon(MainActivity.this, iconResId, title))
+                            .zIndex(3f); // Default z-index
 
-                    // Store MarkerInfo in the marker's tag
+                    // Add marker to the map
+                    Marker marker = gMap.addMarker(markerOptions);
+
                     if (marker != null) {
                         MarkerInfo markerInfo = new MarkerInfo(description, drawableName);
                         marker.setTag(markerInfo);
@@ -336,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if (marker.equals(originMarker) || marker.equals(destinationMarker)) {
                         return false;
                     }
+
                     openBottomDialog(marker.getTitle(), (MarkerInfo) marker.getTag());
                     return true;
                 });
@@ -346,7 +443,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Log.e(TAG, "Failed to load markers: ", databaseError.toException());
                 Toast.makeText(MainActivity.this, "Failed to load markers", Toast.LENGTH_SHORT).show();
             }
-        });
+        };
+        markersRef.addValueEventListener(markersListener);
     }
 
     private BitmapDescriptor setIcon(Activity context, int drawableID, String title) {
@@ -416,7 +514,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.e(TAG, "Failed to get directions", e);
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to get directions", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "Failed to get directions", Toast.LENGTH_SHORT).show();
+                    // Optionally, stop navigation if it was started
+                    if (isNavigating) {
+                        toggleNavigation();
+                    }
+                });
             }
 
             @Override
@@ -456,23 +560,53 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     runOnUiThread(() -> drawRouteOnMap(decodedPath, origin, destination));
                                 } else {
                                     Log.d(TAG, "No suitable route found");
-                                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "No suitable route found", Toast.LENGTH_SHORT).show());
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(MainActivity.this, "No suitable route found", Toast.LENGTH_SHORT).show();
+                                        // Optionally, stop navigation
+                                        if (isNavigating) {
+                                            toggleNavigation();
+                                        }
+                                    });
                                 }
                             } else {
                                 Log.d(TAG, "No routes found in the response");
-                                runOnUiThread(() -> Toast.makeText(MainActivity.this, "No route found", Toast.LENGTH_SHORT).show());
+                                runOnUiThread(() -> {
+                                    Toast.makeText(MainActivity.this, "No route found", Toast.LENGTH_SHORT).show();
+                                    // Optionally, stop navigation
+                                    if (isNavigating) {
+                                        toggleNavigation();
+                                    }
+                                });
                             }
                         } else {
                             Log.e(TAG, "API returned non-OK status: " + status);
-                            runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error: " + status, Toast.LENGTH_SHORT).show());
+                            runOnUiThread(() -> {
+                                Toast.makeText(MainActivity.this, "Error: " + status, Toast.LENGTH_SHORT).show();
+                                // Optionally, stop navigation
+                                if (isNavigating) {
+                                    toggleNavigation();
+                                }
+                            });
                         }
                     } catch (JSONException e) {
                         Log.e(TAG, "Error parsing JSON response", e);
-                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error processing directions", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity.this, "Error processing directions", Toast.LENGTH_SHORT).show();
+                            // Optionally, stop navigation
+                            if (isNavigating) {
+                                toggleNavigation();
+                            }
+                        });
                     }
                 } else {
                     Log.e(TAG, "Unsuccessful response: " + response.code() + " " + response.message());
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Error getting directions", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> {
+                        Toast.makeText(MainActivity.this, "Error getting directions", Toast.LENGTH_SHORT).show();
+                        // Optionally, stop navigation
+                        if (isNavigating) {
+                            toggleNavigation();
+                        }
+                    });
                 }
             }
         });
@@ -496,15 +630,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Draw the polyline for the route
             PolylineOptions polylineOptions = new PolylineOptions()
                     .addAll(path)
-                    .width(10)
-                    .color(Color.rgb(255, 165, 0)); // Orange color
+                    .width(15)
+                    .color(Color.rgb(0, 0, 255)) // Blue color
+                    .zIndex(2f); // Higher z-index than ground overlay
 
             currentPolyline = gMap.addPolyline(polylineOptions);
 
-            originMarker = gMap.addMarker(new MarkerOptions()
-                    .position(origin)
-                    .title("Start")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))); // Custom green marker
+            destinationMarker = gMap.addMarker(new MarkerOptions()
+                    .position(destination)
+                    .title("Destination")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                    .zIndex(3f));
 
             // Set the camera view to show the entire route
             LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
@@ -517,10 +653,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             LatLngBounds bounds = boundsBuilder.build();
             int padding = 100; // Offset from edges of the map in pixels
             gMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding));
+
+            Toast.makeText(MainActivity.this, "Navigation Started", Toast.LENGTH_SHORT).show();
         });
     }
-
-
 
     // Function to decode polyline points
     private List<LatLng> decodePolyline(String encoded) {
@@ -578,5 +714,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Remove the Firebase listener to prevent memory leaks
+        if (markersListener != null) {
+            markersRef.removeEventListener(markersListener);
+        }
     }
 }

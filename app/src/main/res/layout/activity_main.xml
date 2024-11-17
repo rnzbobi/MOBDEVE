@@ -70,6 +70,8 @@
         android:visibility="gone"
         android:elevation="8dp"/>
 
+    <!-- res/layout/activity_main.xml -->
+
     <!-- Start Navigation button -->
     <Button
         android:id="@+id/btn_get_directions"
