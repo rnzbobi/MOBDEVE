@@ -5,14 +5,22 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +33,7 @@ public class NotificationActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private NotificationAdapter notificationAdapter;
     private List<NotificationHolder> notificationList;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,17 +52,15 @@ public class NotificationActivity extends AppCompatActivity {
 
         // Initialize notification list
         notificationList = new ArrayList<>();
-        notificationList.add(new NotificationHolder("DLSU", "UAAP S87 Pep Rally", "Join us at the UAAP S87 Pep Rally and show your school spirit!", "2 hours ago", R.drawable.logo_dlsu, R.drawable.uaap_poster));
-        notificationList.add(new NotificationHolder("DLSU", "Annual Recruitment Week Starts Now!", "Explore various student organizations and find your passion!", "3 hours ago", R.drawable.logo_dlsu, 0));
-        notificationList.add(new NotificationHolder("DLSU", "Free Food at CADS", "Stop by CADS today for some delicious free food. Don't miss out!", "5 hours ago", R.drawable.logo_dlsu, 0));
-        notificationList.add(new NotificationHolder("DLSU", "Goks 24/7 Starts Again Tomorrow", "Goks is back! Study any time of day starting tomorrow.", "Oct 12, 2024", R.drawable.logo_dlsu, 0));
-        notificationList.add(new NotificationHolder("DLSU", "Animusika Concert Coming Soon!", "Get ready for an amazing night of music at Animusika. Stay tuned!", "Oct 10, 2024", R.drawable.logo_dlsu, R.drawable.animusika_poster));
-        notificationList.add(new NotificationHolder("DLSU", "DLSU Tryouts for Basketball at Razon", "Join the tryouts for the DLSU basketball team at Razon. See you there!", "Oct 8, 2024", R.drawable.logo_dlsu, 0));
-
 
         // Set up adapter
         notificationAdapter = new NotificationAdapter(notificationList);
         recyclerView.setAdapter(notificationAdapter);
+
+        databaseReference = FirebaseDatabase.getInstance()
+                .getReference("notifications");
+
+        loadNotificationsFromFirebase();
 
         // Set the indoor_icon to green
         ImageView notificationIcon = findViewById(R.id.notification_icon);
@@ -112,5 +119,35 @@ public class NotificationActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish(); // Optional: Call finish to remove this activity from the stack
+    }
+
+    private void loadNotificationsFromFirebase() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                notificationList.clear(); // Clear the list before adding new data
+                for (DataSnapshot child : snapshot.getChildren()) {
+                    String sender = child.child("sender").getValue(String.class);
+                    String message = child.child("message").getValue(String.class);
+                    String subject = child.child("subject").getValue(String.class);
+                    String timestamp = child.child("timestamp").getValue(String.class);
+
+                    NotificationHolder notification = new NotificationHolder(
+                            sender != null ? sender : "Unknown Sender",
+                            subject != null ? subject : "No Title",
+                            message != null ? message : "No Message",
+                            timestamp != null ? timestamp : "No Timestamp"
+                    );
+
+                    notificationList.add(notification);
+                }
+                notificationAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(NotificationActivity.this, "Failed to load notifications", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

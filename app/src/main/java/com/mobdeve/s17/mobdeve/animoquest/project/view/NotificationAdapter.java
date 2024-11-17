@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -37,49 +38,29 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.title.setText(notification.getTitle());
         holder.subject.setText(notification.getSubject());
         holder.timestamp.setText(notification.getTimestamp());
-        holder.profileImage.setImageResource(notification.getProfileImageResId());
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Show the BottomSheetDialog when clicked
-                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(holder.itemView.getContext());
-                View bottomSheetView = LayoutInflater.from(holder.itemView.getContext())
-                        .inflate(R.layout.bottom_sheet_notification, null);
+        holder.itemView.setOnClickListener(v -> {
+            // Show the BottomSheetDialog when clicked
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(holder.itemView.getContext());
+            View bottomSheetView = LayoutInflater.from(holder.itemView.getContext())
+                    .inflate(R.layout.bottom_sheet_notification, null);
 
-                // Set the title, message, and image inside the bottom sheet
-                TextView title = bottomSheetView.findViewById(R.id.bottom_sheet_title);
-                TextView message = bottomSheetView.findViewById(R.id.bottom_sheet_message);
-                ImageView imageView = bottomSheetView.findViewById(R.id.bottom_sheet_image);
-                ImageView posterView = bottomSheetView.findViewById(R.id.bottom_sheet_poster);
-                Button closeButton = bottomSheetView.findViewById(R.id.btn_close_bottom_sheet);
+            // Set the title, message, inside the bottom sheet
+            TextView title = bottomSheetView.findViewById(R.id.bottom_sheet_title);
+            TextView message = bottomSheetView.findViewById(R.id.bottom_sheet_message);
+            ImageView imageView = bottomSheetView.findViewById(R.id.bottom_sheet_image);
+            Button closeButton = bottomSheetView.findViewById(R.id.btn_close_bottom_sheet);
+            NestedScrollView scrollView = bottomSheetView.findViewById(R.id.nestedScrollView);
 
-                // Set the notification details
-                title.setText(notification.getTitle());
-                message.setText(notification.getMessage());
+            // Populate the bottom sheet content
+            title.setText(notification.getTitle());
+            message.setText(notification.getMessage());
 
-                // Set the image for the notification (use notification's profile image or placeholder)
-                imageView.setImageResource(notification.getProfileImageResId());
+            // Close button action
+            closeButton.setOnClickListener(v1 -> bottomSheetDialog.dismiss());
 
-                // Set the poster image (if available)
-                if (notification.getPosterImageResId() != 0) {
-                    posterView.setVisibility(View.VISIBLE);
-                    posterView.setImageResource(notification.getPosterImageResId());
-                } else {
-                    posterView.setVisibility(View.GONE);  // Hide the poster if not available
-                }
-
-                // Close button action
-                closeButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        bottomSheetDialog.dismiss();
-                    }
-                });
-
-                bottomSheetDialog.setContentView(bottomSheetView);
-                bottomSheetDialog.show();
-            }
+            bottomSheetDialog.setContentView(bottomSheetView);
+            bottomSheetDialog.show();
         });
     }
 
@@ -101,4 +82,3 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 }
-

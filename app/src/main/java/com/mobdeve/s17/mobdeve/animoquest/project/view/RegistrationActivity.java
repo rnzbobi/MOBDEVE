@@ -28,6 +28,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
 import com.mobdeve.s17.mobdeve.animoquest.project.model.User;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class RegistrationActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -56,49 +58,40 @@ public class RegistrationActivity extends AppCompatActivity {
         finish();
     }
 
-    public void registerFunction (View v) {
-        String email = ((EditText) findViewById(R.id.emailAddressInput)).getText().toString();
-        String password = ((EditText) findViewById(R.id.passwordInput)).getText().toString();
+    public void registerFunction(View view) {
         String firstName = ((EditText) findViewById(R.id.firstNameInput)).getText().toString();
         String lastName = ((EditText) findViewById(R.id.lastNameInput)).getText().toString();
         String idNumber = ((EditText) findViewById(R.id.idNumberInput)).getText().toString();
+        String email = ((EditText) findViewById(R.id.emailAddressInput)).getText().toString();
+        String password = ((EditText) findViewById(R.id.passwordInput)).getText().toString();
 
-        // Register user with email and password
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Get the registered user
-                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        // Hash the password using BCrypt
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
-                            // Create a new User object
-                            User user = new User(firstName, lastName, idNumber, email);
+        // Create Firebase Auth account with email and password
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                        if (firebaseUser != null) {
+                            // Create User object with hashed password
+                            User user = new User(firstName, lastName, idNumber, email, hashedPassword);
 
-                            // Save the User object in Realtime Database under the user's UID
-                            databaseUsers.child("users").child(firebaseUser.getUid()).setValue(user)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            // Successfully saved user info
-                                            Log.d("RealtimeDB", "User profile created for " + firebaseUser.getUid());
-                                        }
+                            // Save User object to Firebase Realtime Database
+                            databaseUsers.child(firebaseUser.getUid()).setValue(user)
+                                    .addOnSuccessListener(aVoid -> {
+                                        Toast.makeText(RegistrationActivity.this, "Registration successful. Please log in.", Toast.LENGTH_SHORT).show();
+                                        // Redirect to LoginActivity
+                                        Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
+                                        startActivity(intent);
+                                        finish();
                                     })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Log.w("RealtimeDB", "Error adding user info", e);
-                                            Toast.makeText(RegistrationActivity.this, "Failed to save user info.",
-                                                    Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        } else {
-                            // If registration fails, display a message to the user.
-                            Log.w("Registration", "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(RegistrationActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
+                                    .addOnFailureListener(e -> Toast.makeText(RegistrationActivity.this, "Failed to save user data", Toast.LENGTH_SHORT).show());
                         }
+                    } else {
+                        Toast.makeText(RegistrationActivity.this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
 }

@@ -1,12 +1,16 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Patterns;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -42,6 +46,10 @@ public class LoginActivity extends AppCompatActivity {
     Button googleButton;
     TextView createAccount;
     GoogleSignInClient client;
+    FirebaseAuth mAuth;
+    EditText emailInput;
+    EditText passwordInput;
+    CheckBox keepMeSignedInCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +57,7 @@ public class LoginActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
         googleButton = findViewById(R.id.googleButton);
+        mAuth = FirebaseAuth.getInstance();
 
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -80,6 +89,28 @@ public class LoginActivity extends AppCompatActivity {
         });
         loginButton = findViewById(R.id.loginButton);
         createAccount = findViewById(R.id.createAccount);
+        emailInput = findViewById(R.id.emailInput);
+        passwordInput = findViewById(R.id.passwordInput);
+        keepMeSignedInCheckBox = findViewById(R.id.keepMeSignedInCheckbox);
+
+        // Check if user selected "Keep Me Signed In"
+        SharedPreferences sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+        boolean isSignedIn = sharedPreferences.getBoolean("isSignedIn", false);
+
+        if (isSignedIn) {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser != null) {
+                // Redirect to MainActivity if the user is still authenticated
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                // Clear the "isSignedIn" flag if the Firebase session expired
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isSignedIn", false);
+                editor.apply();
+            }
+        }
     }
 
     @Override
@@ -142,10 +173,53 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    public void loginFunction (View v) {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        startActivity(intent);
-        finish();
+    public void loginFunction(View view) {
+        String email = emailInput.getText().toString().trim();
+        String password = passwordInput.getText().toString().trim();
+
+        // Validate inputs
+        if (email.isEmpty()) {
+            emailInput.setError("Email is required");
+            emailInput.requestFocus();
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailInput.setError("Please enter a valid email");
+            emailInput.requestFocus();
+            return;
+        }
+
+        if (password.isEmpty()) {
+            passwordInput.setError("Password is required");
+            passwordInput.requestFocus();
+            return;
+        }
+
+        // Authenticate with Firebase
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            // Save "Keep Me Signed In" state if checkbox is checked
+                            if (keepMeSignedInCheckBox.isChecked()) {
+                                SharedPreferences sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                editor.putBoolean("isSignedIn", true);
+                                editor.apply();
+                            }
+
+                            // Redirect to MainActivity
+                            Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     public void registerFunction (View v) {

@@ -1,20 +1,21 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.model;
 
 public class User {
-    public String firstName;
-    public String lastName;
-    public String idNumber;
-    public String email;
-
+    private String firstName;
+    private String lastName;
+    private String idNumber;
+    private String email;
+    private String hashedPassword;
 
     public User() {
     }
 
-    public User(String firstName, String lastName, String idNumber, String email) {
+    public User(String firstName, String lastName, String idNumber, String email, String hashedPassword) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.idNumber = idNumber;
         this.email = email;
+        this.hashedPassword = hashedPassword;
     }
 
     public String getEmail() {
@@ -31,6 +32,10 @@ public class User {
 
     public String getIdNumber() {
         return idNumber;
+    }
+
+    public String getHashedPassword() {
+        return hashedPassword;
     }
 }
 

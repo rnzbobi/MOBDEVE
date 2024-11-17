@@ -1,62 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="true"
+    android:padding="16dp"
+    android:id="@+id/nestedScrollView">
 
-    <!-- Horizontal layout for image and title -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <!-- Profile Picture beside Title -->
-        <ImageView
-            android:id="@+id/bottom_sheet_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="12dp"
-            android:src="@drawable/profile_placeholder" />
+        <!-- Horizontal layout for image and title -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <!-- Title of the Notification -->
+            <!-- Profile Picture beside Title -->
+            <ImageView
+                android:id="@+id/bottom_sheet_image"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/profile_placeholder" />
+
+            <!-- Title of the Notification -->
+            <TextView
+                android:id="@+id/bottom_sheet_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Notification Title"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:ellipsize="end"
+                android:maxLines="1" />
+        </LinearLayout>
+
+        <!-- Notification Details -->
         <TextView
-            android:id="@+id/bottom_sheet_title"
+            android:id="@+id/bottom_sheet_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Full notification details will be shown here."
+            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            android:textColor="@android:color/black" />
+
+        <!-- Big Poster or Pub Mat -->
+        <ImageView
+            android:id="@+id/bottom_sheet_poster"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_poster"
+            android:visibility="gone" />
+
+        <!-- Dismiss Button -->
+        <Button
+            android:id="@+id/btn_close_bottom_sheet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Notification Title"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:text="Close"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/green" />
     </LinearLayout>
-
-    <!-- Notification Details -->
-    <TextView
-        android:id="@+id/bottom_sheet_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Full notification details will be shown here."
-        android:textSize="14sp"
-        android:layout_marginTop="8dp"
-        android:textColor="@android:color/black" />
-
-    <!-- Big Poster or Pub Mat -->
-    <ImageView
-        android:id="@+id/bottom_sheet_poster"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginTop="16dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/sample_poster"
-        android:visibility="gone" />
-
-    <!-- Dismiss Button -->
-    <Button
-        android:id="@+id/btn_close_bottom_sheet"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Close"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/green"/>
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

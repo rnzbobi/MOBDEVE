@@ -73,6 +73,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
+    implementation ("org.mindrot:jbcrypt:0.4")
 }
 
 apply(plugin = "com.google.gms.google-services")

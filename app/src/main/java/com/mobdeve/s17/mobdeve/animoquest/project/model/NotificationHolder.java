@@ -5,16 +5,12 @@ public class NotificationHolder {
     private String subject;
     private String message;
     private String timestamp;
-    private int profileImageResId;
-    private int posterImageResId;
 
-    public NotificationHolder(String title, String subject, String message, String timestamp, int profileImageResId, int posterImageResId) {
+    public NotificationHolder(String title, String subject, String message, String timestamp) {
         this.title = title;
         this.subject = subject;
         this.message = message;
         this.timestamp = timestamp;
-        this.profileImageResId = profileImageResId;
-        this.posterImageResId = posterImageResId;
     }
 
     // Getters
@@ -34,11 +30,4 @@ public class NotificationHolder {
         return timestamp;
     }
 
-    public int getProfileImageResId() {
-        return profileImageResId;
-    }
-
-    public int getPosterImageResId() {
-        return posterImageResId;
-    }
 }
