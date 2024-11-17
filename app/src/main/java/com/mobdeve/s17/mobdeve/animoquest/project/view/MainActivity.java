@@ -623,7 +623,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             PolylineOptions polylineOptions = new PolylineOptions()
                     .addAll(path)
                     .width(15)
-                    .color(Color.rgb(0, 0, 255)) // Blue color
+                    .color(Color.rgb(255, 0, 0)) // Blue color
                     .zIndex(2f); // Higher z-index than ground overlay
 
             currentPolyline = gMap.addPolyline(polylineOptions);
