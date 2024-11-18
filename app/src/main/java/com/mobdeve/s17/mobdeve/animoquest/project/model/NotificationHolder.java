@@ -29,5 +29,4 @@ public class NotificationHolder {
     public String getTimestamp() {
         return timestamp;
     }
-
 }

@@ -35,11 +35,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         NotificationHolder notification = notificationList.get(position);
+
         holder.title.setText(notification.getTitle());
         holder.subject.setText(notification.getSubject());
         holder.timestamp.setText(notification.getTimestamp());
 
         holder.itemView.setOnClickListener(v -> {
+
             // Show the BottomSheetDialog when clicked
             BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(holder.itemView.getContext());
             View bottomSheetView = LayoutInflater.from(holder.itemView.getContext())
@@ -55,6 +57,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             // Populate the bottom sheet content
             title.setText(notification.getTitle());
             message.setText(notification.getMessage());
+            imageView.setImageResource(R.drawable.logo_dlsu);
 
             // Close button action
             closeButton.setOnClickListener(v1 -> bottomSheetDialog.dismiss());
@@ -67,6 +70,12 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @Override
     public int getItemCount() {
         return notificationList.size();
+    }
+
+    public void updateData(List<NotificationHolder> newNotifications) {
+        this.notificationList.clear();
+        this.notificationList.addAll(newNotifications);
+        notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

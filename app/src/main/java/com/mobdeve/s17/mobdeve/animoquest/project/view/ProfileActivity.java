@@ -1,6 +1,8 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +27,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
+
+import java.io.File;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -56,6 +60,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         if(currentUser != null) {
             loadUserProfile();
+            loadProfilePicture();
         } else {
             Toast.makeText(this, "User not signed in", Toast.LENGTH_SHORT).show();
         }
@@ -155,17 +160,6 @@ public class ProfileActivity extends AppCompatActivity {
                     fullNameText.setText((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : ""));
                     emailText.setText(email != null ? email : "");
 
-                    // Load profile image if a URL is available
-                    if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
-                        Glide.with(ProfileActivity.this)
-                                .load(profilePictureUrl)
-                                .placeholder(R.drawable.profile_placeholder) // Placeholder image while loading
-                                .error(R.drawable.profile_placeholder) // Fallback image if URL fails to load
-                                .into(profileImage);
-                    } else {
-                        // Set default placeholder if no profile picture URL is provided
-                        profileImage.setImageResource(R.drawable.profile_placeholder);
-                    }
                 } else {
                     Log.d("ProfileActivity", "User data not found in database");
                     Toast.makeText(ProfileActivity.this, "User data not found", Toast.LENGTH_SHORT).show();
@@ -178,5 +172,39 @@ public class ProfileActivity extends AppCompatActivity {
                 Toast.makeText(ProfileActivity.this, "Failed to load user data", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void loadProfilePicture() {
+        String uid = currentUser.getUid();
+        File file = new File(getFilesDir(), uid + "_profile_picture.png");
+
+        if (file.exists()) {
+            // Load the cached local image
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+            profileImage.setImageBitmap(bitmap);
+        } else {
+            // If no local image exists, fall back to the Firebase URL
+            databaseReference.child(uid).child("profilePictureUrl").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String profilePictureUrl = snapshot.getValue(String.class);
+                    if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
+                        Glide.with(ProfileActivity.this)
+                                .load(profilePictureUrl)
+                                .placeholder(R.drawable.profile_placeholder)
+                                .error(R.drawable.profile_placeholder)
+                                .into(profileImage);
+                    } else {
+                        // Default placeholder if no URL exists
+                        profileImage.setImageResource(R.drawable.profile_placeholder);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e("ProfileActivity", "Failed to fetch profile picture URL: " + error.getMessage());
+                }
+            });
+        }
     }
 }

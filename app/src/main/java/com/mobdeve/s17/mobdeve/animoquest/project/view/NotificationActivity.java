@@ -3,6 +3,7 @@ package com.mobdeve.s17.mobdeve.animoquest.project.view;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -23,6 +24,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
@@ -34,6 +36,7 @@ public class NotificationActivity extends AppCompatActivity {
     private NotificationAdapter notificationAdapter;
     private List<NotificationHolder> notificationList;
     private DatabaseReference databaseReference;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,7 +144,11 @@ public class NotificationActivity extends AppCompatActivity {
 
                     notificationList.add(notification);
                 }
-                notificationAdapter.notifyDataSetChanged();
+
+                List<NotificationHolder> reversedList = new ArrayList<>(notificationList);
+                Collections.reverse(reversedList);
+
+                notificationAdapter.updateData(reversedList);
             }
 
             @Override
