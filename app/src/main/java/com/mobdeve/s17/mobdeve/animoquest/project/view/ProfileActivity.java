@@ -130,8 +130,24 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     public void changePasswordFunction(View v) {
-        Intent intent = new Intent(ProfileActivity.this, ChangePasswordActivity.class);
-        startActivity(intent);
+        if (currentUser != null) {
+            String userEmail = currentUser.getEmail();
+
+            if (userEmail != null && !userEmail.isEmpty()) {
+                FirebaseAuth.getInstance().sendPasswordResetEmail(userEmail)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(ProfileActivity.this, "Password reset email sent. Check your inbox.", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(ProfileActivity.this, "Failed to send reset email: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+            } else {
+                Toast.makeText(ProfileActivity.this, "No email associated with the current user.", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(ProfileActivity.this, "User not logged in.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void signOutFunction(View v) {
@@ -141,6 +157,49 @@ public class ProfileActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
+    public void deleteAccountFunction(View v) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("users");
+        DatabaseReference userNotificationsRef = FirebaseDatabase.getInstance().getReference("userNotifications");
+
+        if (currentUser != null) {
+            String uid = currentUser.getUid();
+
+            // Remove user data and notifications in a transaction
+            usersRef.child(uid).removeValue()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // Delete the user's notifications
+                            userNotificationsRef.child(uid).removeValue()
+                                    .addOnCompleteListener(notificationsTask -> {
+                                        if (notificationsTask.isSuccessful()) {
+                                            // Finally, delete the Firebase Authentication user
+                                            currentUser.delete()
+                                                    .addOnCompleteListener(deleteTask -> {
+                                                        if (deleteTask.isSuccessful()) {
+                                                            Toast.makeText(this, "Account deleted successfully.", Toast.LENGTH_SHORT).show();
+                                                            // Redirect to Onboarding Activity
+                                                            Intent intent = new Intent(this, OnboardingActivity.class);
+                                                            startActivity(intent);
+                                                            finish();
+                                                        } else {
+                                                            Toast.makeText(this, "Failed to delete account: " + deleteTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                        } else {
+                                            Toast.makeText(this, "Failed to delete user notifications: " + notificationsTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        } else {
+                            Toast.makeText(this, "Failed to delete user data: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            Toast.makeText(this, "No user is currently logged in.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     private void loadUserProfile() {
         String uid = currentUser.getUid();

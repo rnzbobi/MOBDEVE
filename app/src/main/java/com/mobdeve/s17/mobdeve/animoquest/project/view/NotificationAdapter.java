@@ -1,5 +1,6 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,9 @@ import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
 import com.mobdeve.s17.mobdeve.animoquest.project.model.NotificationHolder;
 
@@ -40,6 +44,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.subject.setText(notification.getSubject());
         holder.timestamp.setText(notification.getTimestamp());
 
+        if (notification.isRead()) {
+            holder.title.setAlpha(0.6f); // Dim the title for read notifications
+            holder.statusDot.setVisibility(View.INVISIBLE); // Hide the blue dot for read notifications
+        } else {
+            holder.title.setAlpha(1.0f); // Normal brightness for unread notifications
+            holder.statusDot.setVisibility(View.VISIBLE); // Show the blue dot for unread notifications
+        }
+
         holder.itemView.setOnClickListener(v -> {
 
             // Show the BottomSheetDialog when clicked
@@ -58,6 +70,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             title.setText(notification.getTitle());
             message.setText(notification.getMessage());
             imageView.setImageResource(R.drawable.logo_dlsu);
+
+            // Mark notification as read
+            notification.setRead(true);
+            notifyItemChanged(position);
+
+            // Update isRead status in the database
+            updateNotificationReadStatus(notification.getId());
 
             // Close button action
             closeButton.setOnClickListener(v1 -> bottomSheetDialog.dismiss());
@@ -79,7 +98,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView profileImage;
+        ImageView profileImage, statusDot;
         TextView subject, timestamp, title;
 
         public ViewHolder(@NonNull View itemView) {
@@ -88,6 +107,25 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             profileImage = itemView.findViewById(R.id.profile_image);
             subject = itemView.findViewById(R.id.subject);
             timestamp = itemView.findViewById(R.id.timestamp);
+            statusDot = itemView.findViewById(R.id.status_dot);
         }
     }
+
+    private void updateNotificationReadStatus(String notificationId) {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference userNotificationsRef = FirebaseDatabase.getInstance()
+                .getReference("userNotifications")
+                .child(currentUserId)
+                .child(notificationId);
+
+        userNotificationsRef.child("isRead").setValue(true)
+                .addOnSuccessListener(aVoid -> {
+                    // Successfully updated
+                })
+                .addOnFailureListener(e -> {
+                    // Log or show error
+                    Log.e("NotificationAdapter", "Failed to update read status: " + e.getMessage());
+                });
+    }
+
 }

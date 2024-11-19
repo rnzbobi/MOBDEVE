@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -125,26 +126,24 @@ public class NotificationActivity extends AppCompatActivity {
     }
 
     private void loadNotificationsFromFirebase() {
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference userNotificationsRef = FirebaseDatabase.getInstance()
+                .getReference("userNotifications").child(userId);
+
+        userNotificationsRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                notificationList.clear(); // Clear the list before adding new data
+                notificationList.clear();
                 for (DataSnapshot child : snapshot.getChildren()) {
+                    String id = child.getKey();
                     String sender = child.child("sender").getValue(String.class);
-                    String message = child.child("message").getValue(String.class);
                     String subject = child.child("subject").getValue(String.class);
+                    String message = child.child("message").getValue(String.class);
                     String timestamp = child.child("timestamp").getValue(String.class);
+                    boolean isRead = child.child("isRead").getValue(Boolean.class);
 
-                    NotificationHolder notification = new NotificationHolder(
-                            sender != null ? sender : "Unknown Sender",
-                            subject != null ? subject : "No Title",
-                            message != null ? message : "No Message",
-                            timestamp != null ? timestamp : "No Timestamp"
-                    );
-
-                    notificationList.add(notification);
+                    notificationList.add(new NotificationHolder(id, sender, subject, message, timestamp, isRead));
                 }
-
                 List<NotificationHolder> reversedList = new ArrayList<>(notificationList);
                 Collections.reverse(reversedList);
 
@@ -157,4 +156,5 @@ public class NotificationActivity extends AppCompatActivity {
             }
         });
     }
+
 }

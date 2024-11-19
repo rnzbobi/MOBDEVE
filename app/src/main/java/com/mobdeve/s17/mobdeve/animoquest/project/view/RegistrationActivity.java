@@ -65,6 +65,15 @@ public class RegistrationActivity extends AppCompatActivity {
         String email = ((EditText) findViewById(R.id.emailAddressInput)).getText().toString();
         String password = ((EditText) findViewById(R.id.passwordInput)).getText().toString();
 
+        // Regex for ID number validation
+        String idNumberPattern = "^(\\d{3})\\d{5}$";
+
+        // Validate ID number
+        if (!idNumber.matches(idNumberPattern)) {
+            Toast.makeText(this, "Invalid ID number.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Hash the password using BCrypt
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 

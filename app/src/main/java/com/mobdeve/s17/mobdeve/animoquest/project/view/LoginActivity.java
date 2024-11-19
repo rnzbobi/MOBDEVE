@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -33,9 +34,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.NotificationHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -152,6 +157,7 @@ public class LoginActivity extends AppCompatActivity {
 
                                         databaseReference.setValue(userData)
                                                 .addOnSuccessListener(aVoid -> {
+                                                    syncUserNotifications(user.getUid());
                                                     // Data saved successfully; proceed to main activity
                                                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                                     startActivity(intent);
@@ -210,6 +216,8 @@ public class LoginActivity extends AppCompatActivity {
                                 editor.apply();
                             }
 
+                            syncUserNotifications(user.getUid());
+
                             // Redirect to MainActivity
                             Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -230,5 +238,56 @@ public class LoginActivity extends AppCompatActivity {
     public void forgotPasswordFunction (View v) {
         Intent intent = new Intent(getApplicationContext(), ForgotPasswordActivity.class);
         startActivity(intent);
+    }
+
+    private void syncUserNotifications(String userId) {
+        DatabaseReference notificationsRef = FirebaseDatabase.getInstance().getReference("notifications");
+        DatabaseReference userNotificationsRef = FirebaseDatabase.getInstance().getReference("userNotifications").child(userId);
+
+        // Fetch all notifications
+        notificationsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot notificationsSnapshot) {
+                if (notificationsSnapshot.exists()) {
+                    userNotificationsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot userNotificationsSnapshot) {
+                            for (DataSnapshot notification : notificationsSnapshot.getChildren()) {
+                                String id = notification.getKey(); // Notification ID
+                                String sender = notification.child("sender").getValue(String.class);
+                                String subject = notification.child("subject").getValue(String.class);
+                                String message = notification.child("message").getValue(String.class);
+                                String timestamp = notification.child("timestamp").getValue(String.class);
+
+                                // Check if the notification already exists in userNotifications
+                                if (!userNotificationsSnapshot.hasChild(id)) {
+                                    // Create a new notification entry for the user
+                                    Map<String, Object> newNotification = new HashMap<>();
+                                    newNotification.put("id", id);
+                                    newNotification.put("sender", sender);
+                                    newNotification.put("subject", subject);
+                                    newNotification.put("message", message);
+                                    newNotification.put("timestamp", timestamp);
+                                    newNotification.put("isRead", false); // Default to unread
+
+                                    // Add the notification under the userNotifications node
+                                    userNotificationsRef.child(id).setValue(newNotification);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Log.e("SyncError", "Failed to fetch user notifications: " + error.getMessage());
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("SyncError", "Failed to fetch notifications: " + error.getMessage());
+            }
+        });
     }
 }

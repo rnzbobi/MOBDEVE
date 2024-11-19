@@ -191,7 +191,7 @@
         android:background="@drawable/custom_registrationtext_background"
         android:inputType="textPassword"
         android:text="samplepassword"
-        android:textIsSelectable="true"
+        android:textIsSelectable="false"
         android:clickable="false"
         android:focusable="false"
         android:longClickable="false"

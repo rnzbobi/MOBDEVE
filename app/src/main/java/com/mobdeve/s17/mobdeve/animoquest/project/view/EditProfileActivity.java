@@ -220,7 +220,7 @@ public class EditProfileActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(password)) {
             // Hash the password before saving
             String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-            databaseReference.child("password").setValue(hashedPassword);
+            databaseReference.child("hashedPassword").setValue(hashedPassword);
         }
 
         Toast.makeText(this, "Profile updated successfully.", Toast.LENGTH_SHORT).show();
