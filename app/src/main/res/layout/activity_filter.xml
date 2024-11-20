@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,7 +14,6 @@
             android:layout_height="wrap_content"
             android:text="Building"
             android:textSize="20sp"
-            android:fontFamily="@font/roboto_medium"
             android:layout_marginBottom="8dp" />
 
         <EditText
@@ -30,7 +28,6 @@
             android:layout_height="wrap_content"
             android:text="Floors"
             android:textSize="20sp"
-            android:fontFamily="@font/roboto_medium"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp" />
 
@@ -38,79 +35,13 @@
             android:id="@+id/filterFloorsSlider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:progress="0"
-            android:max="50"
-            android:progressTint="#347000" />
+            android:max="50" />
 
         <TextView
             android:id="@+id/filterFloorsValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Selected: 0 floors" />
-
-        <!-- Elevator Number Filter -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Elevator Number"
-            android:textSize="20sp"
-            android:fontFamily="@font/roboto_medium"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
-
-        <EditText
-            android:id="@+id/filterElevatorNumber"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter elevator number" />
-
-        <!-- Wait Time Filter -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Wait Time (sec)"
-            android:textSize="20sp"
-            android:fontFamily="@font/roboto_medium"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
-
-        <SeekBar
-            android:id="@+id/filterWaitTimeSlider"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:progress="0"
-            android:max="80"
-            android:progressTint="#347000" />
-
-        <TextView
-            android:id="@+id/filterWaitTimeValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Selected: 0 sec" />
-
-        <!-- Capacity Filter -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Capacity (people)"
-            android:textSize="20sp"
-            android:fontFamily="@font/roboto_medium"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
-
-        <SeekBar
-            android:id="@+id/filterCapacitySlider"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:progress="0"
-            android:max="50"
-            android:progressTint="#347000" />
-
-        <TextView
-            android:id="@+id/filterCapacityValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Selected: 0 people" />
 
         <!-- Buttons -->
         <LinearLayout
@@ -125,17 +56,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Apply Filter"
-                android:backgroundTint="#347000"
-                android:textColor="@android:color/white"
                 android:layout_marginEnd="16dp" />
 
             <Button
                 android:id="@+id/cancelFilterButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cancel"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#A9A9A9" />
+                android:text="Cancel" />
         </LinearLayout>
 
     </LinearLayout>

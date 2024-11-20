@@ -10,9 +10,9 @@
     android:elevation="0dp"
     android:layout_margin="8dp">
 
-    <!-- Image for the Building with a circular shape and border -->
+    <!-- Image for the Floor with a circular shape -->
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/building_icon"
+        android:id="@+id/floor_icon"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_gravity="center_vertical"
@@ -20,7 +20,7 @@
         app:civ_border_width="2dp"
         app:civ_border_color="#347000" />
 
-    <!-- Main content area: Building name, total floors -->
+    <!-- Main content area: Floor name, capacity, and waiting time -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -28,23 +28,31 @@
         android:orientation="vertical"
         android:gravity="center_vertical">
 
-        <!-- Building Name -->
+        <!-- Floor Name -->
         <TextView
-            android:id="@+id/buildingName"
+            android:id="@+id/floorName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:text="Building Name" />
+            android:text="Floor Name" />
 
-        <!-- Floors Count -->
+        <!-- Capacity -->
         <TextView
-            android:id="@+id/floorCount"
+            android:id="@+id/capacity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Floors: 0"
+            android:text="Capacity: N/A"
             android:textSize="14sp"
             android:textColor="@android:color/black" />
 
+        <!-- Waiting Time -->
+        <TextView
+            android:id="@+id/waitingTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Waiting Time: N/A"
+            android:textSize="14sp"
+            android:textColor="@android:color/black" />
     </LinearLayout>
 </LinearLayout>
