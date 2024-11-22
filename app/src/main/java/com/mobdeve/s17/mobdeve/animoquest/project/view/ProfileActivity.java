@@ -1,6 +1,7 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
@@ -124,6 +125,13 @@ public class ProfileActivity extends AppCompatActivity {
         finish(); // Optional: Call finish to remove this activity from the stack
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadUserProfile(); // Re-fetch updated data from Firebase
+        loadProfilePicture(); // Re-fetch profile picture if it was updated
+    }
+
     public void editProfileFunction(View v) {
         Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
         startActivity(intent);
@@ -151,6 +159,11 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     public void signOutFunction(View v) {
+        SharedPreferences sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("isSignedIn", false);
+        editor.apply();
+
         FirebaseAuth.getInstance().signOut();
 
         Intent intent = new Intent(ProfileActivity.this, OnboardingActivity.class);

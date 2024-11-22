@@ -68,9 +68,18 @@ public class RegistrationActivity extends AppCompatActivity {
         // Regex for ID number validation
         String idNumberPattern = "^(\\d{3})\\d{5}$";
 
+        // Regex for DLSU email validation
+        String dlsuEmailPattern = "^[a-zA-Z0-9._%+-]+@dlsu\\.edu\\.ph$";
+
         // Validate ID number
         if (!idNumber.matches(idNumberPattern)) {
             Toast.makeText(this, "Invalid ID number.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Validate DLSU email
+        if (!email.matches(dlsuEmailPattern)) {
+            Toast.makeText(this, "Please use a valid DLSU email (e.g., firstname_lastname@dlsu.edu.ph).", Toast.LENGTH_SHORT).show();
             return;
         }
 

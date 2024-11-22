@@ -42,7 +42,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class EditProfileActivity extends AppCompatActivity {
 
-    private EditText firstNameInput, lastNameInput, idNumberInput, emailAddressInput, passwordInput;
+    private EditText firstNameInput, lastNameInput, idNumberInput;
     private CircleImageView profileImage;
     private DatabaseReference databaseReference;
     private FirebaseAuth mAuth;
@@ -64,8 +64,6 @@ public class EditProfileActivity extends AppCompatActivity {
         firstNameInput = findViewById(R.id.firstNameInput);
         lastNameInput = findViewById(R.id.lastNameInput);
         idNumberInput = findViewById(R.id.idNumberInput);
-        emailAddressInput = findViewById(R.id.emailAddressInput);
-        passwordInput = findViewById(R.id.passwordInput);
         confirmEditButton = findViewById(R.id.confirmEditButton);
         profileImage = findViewById(R.id.profile_picture);
 
@@ -98,8 +96,6 @@ public class EditProfileActivity extends AppCompatActivity {
                     firstNameInput.setText(firstName);
                     lastNameInput.setText(lastName);
                     idNumberInput.setText(idNumber);
-                    emailAddressInput.setText(email);
-
                 } else {
                     Toast.makeText(EditProfileActivity.this, "User data not found.", Toast.LENGTH_SHORT).show();
                 }
@@ -175,53 +171,66 @@ public class EditProfileActivity extends AppCompatActivity {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
             profileImage.setImageBitmap(bitmap);
         } else {
-            // If no local image exists, fall back to the Firebase URL
-            databaseReference.child(uid).child("profilePictureUrl").addListenerForSingleValueEvent(new ValueEventListener() {
+            // If no local image exists, fetch the profilePictureUrl from Firebase
+            databaseReference.child("profilePictureUrl").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     String profilePictureUrl = snapshot.getValue(String.class);
                     if (profilePictureUrl != null && !profilePictureUrl.isEmpty()) {
+                        // Use Glide to load the profile picture from the URL
                         Glide.with(EditProfileActivity.this)
                                 .load(profilePictureUrl)
                                 .placeholder(R.drawable.profile_placeholder)
                                 .error(R.drawable.profile_placeholder)
                                 .into(profileImage);
                     } else {
-                        // Default placeholder if no URL exists
+                        // Default placeholder if no profilePictureUrl exists
                         profileImage.setImageResource(R.drawable.profile_placeholder);
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    Log.e("ProfileActivity", "Failed to fetch profile picture URL: " + error.getMessage());
+                    Log.e("EditProfileActivity", "Failed to fetch profile picture URL: " + error.getMessage());
                 }
             });
         }
     }
 
+
     public void confirmEditFunction(View view) {
         String firstName = firstNameInput.getText().toString().trim();
         String lastName = lastNameInput.getText().toString().trim();
         String idNumber = idNumberInput.getText().toString().trim();
-        String email = emailAddressInput.getText().toString().trim();
-        String password = passwordInput.getText().toString().trim();
 
-        if (TextUtils.isEmpty(firstName) || TextUtils.isEmpty(lastName) || TextUtils.isEmpty(email)) {
+        if (TextUtils.isEmpty(firstName) || TextUtils.isEmpty(lastName)) {
             Toast.makeText(this, "All fields except password must be filled.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Validate that firstName and lastName contain only letters
+        String namePattern = "^[a-zA-Z]+$";
+        if (!firstName.matches(namePattern)) {
+            Toast.makeText(this, "First name can only contain letters.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!lastName.matches(namePattern)) {
+            Toast.makeText(this, "Last name can only contain letters.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Regex for ID number validation
+        String idNumberPattern = "^(\\d{3})\\d{5}$";
+
+        // Validate ID number
+        if (!idNumber.matches(idNumberPattern)) {
+            Toast.makeText(this, "Invalid ID number.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         databaseReference.child("firstName").setValue(firstName);
         databaseReference.child("lastName").setValue(lastName);
         databaseReference.child("idNumber").setValue(idNumber);
-        databaseReference.child("email").setValue(email);
-
-        if (!TextUtils.isEmpty(password)) {
-            // Hash the password before saving
-            String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-            databaseReference.child("hashedPassword").setValue(hashedPassword);
-        }
 
         Toast.makeText(this, "Profile updated successfully.", Toast.LENGTH_SHORT).show();
         finish();

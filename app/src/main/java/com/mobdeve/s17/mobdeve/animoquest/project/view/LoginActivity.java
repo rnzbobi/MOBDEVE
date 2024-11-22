@@ -97,25 +97,6 @@ public class LoginActivity extends AppCompatActivity {
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
         keepMeSignedInCheckBox = findViewById(R.id.keepMeSignedInCheckbox);
-
-        // Check if user selected "Keep Me Signed In"
-        SharedPreferences sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
-        boolean isSignedIn = sharedPreferences.getBoolean("isSignedIn", false);
-
-        if (isSignedIn) {
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            if (currentUser != null) {
-                // Redirect to MainActivity if the user is still authenticated
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
-            } else {
-                // Clear the "isSignedIn" flag if the Firebase session expired
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("isSignedIn", false);
-                editor.apply();
-            }
-        }
     }
 
     @Override
@@ -148,24 +129,50 @@ public class LoginActivity extends AppCompatActivity {
                                         DatabaseReference databaseReference = FirebaseDatabase.getInstance()
                                                 .getReference("users").child(user.getUid());
 
-                                        // Create a map to store user data
-                                        Map<String, Object> userData = new HashMap<>();
-                                        userData.put("firstName", firstName);
-                                        userData.put("lastName", lastName);
-                                        userData.put("email", userEmail);
-                                        userData.put("profilePictureUrl", profilePictureUrl);
+                                        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                if (dataSnapshot.exists()) {
+                                                    // Data exists; skip saving and proceed to the main activity
+                                                    CheckBox keepMeSignedInCheckBox = findViewById(R.id.keepMeSignedInCheckbox);
+                                                    if (keepMeSignedInCheckBox != null && keepMeSignedInCheckBox.isChecked()) {
+                                                        SharedPreferences sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE);
+                                                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                                                        editor.putBoolean("isSignedIn", true);
+                                                        editor.apply();
+                                                    }
 
-                                        databaseReference.setValue(userData)
-                                                .addOnSuccessListener(aVoid -> {
                                                     syncUserNotifications(user.getUid());
-                                                    // Data saved successfully; proceed to main activity
                                                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                                     startActivity(intent);
                                                     finish();
-                                                })
-                                                .addOnFailureListener(e -> {
-                                                    Toast.makeText(LoginActivity.this, "Failed to save user data", Toast.LENGTH_SHORT).show();
-                                                });
+                                                } else {
+                                                    // Data does not exist; save new data
+                                                    Map<String, Object> userData = new HashMap<>();
+                                                    userData.put("firstName", firstName);
+                                                    userData.put("lastName", lastName);
+                                                    userData.put("email", userEmail);
+                                                    userData.put("profilePictureUrl", profilePictureUrl);
+
+                                                    databaseReference.setValue(userData)
+                                                            .addOnSuccessListener(aVoid -> {
+                                                                syncUserNotifications(user.getUid());
+                                                                // Data saved successfully; proceed to main activity
+                                                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                                                startActivity(intent);
+                                                                finish();
+                                                            })
+                                                            .addOnFailureListener(e -> {
+                                                                Toast.makeText(LoginActivity.this, "Failed to save user data", Toast.LENGTH_SHORT).show();
+                                                            });
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                Toast.makeText(LoginActivity.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                     }
                                 } else {
                                     Toast.makeText(LoginActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show();
@@ -177,7 +184,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     }
-
 
     public void loginFunction(View view) {
         String email = emailInput.getText().toString().trim();
