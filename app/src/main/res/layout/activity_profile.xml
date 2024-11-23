@@ -32,14 +32,14 @@
             android:id="@+id/profile_image"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:src="@drawable/bronny"
+            android:src="@drawable/profile_placeholder"
             android:layout_centerHorizontal="true" />
 
         <TextView
             android:id="@+id/fullNameText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Lebron James Jr."
+            android:text="Example Name"
             android:textSize="28sp"
             android:fontFamily="@font/roboto_bold"
             android:textColor="@android:color/black"
@@ -50,7 +50,7 @@
             android:id="@+id/emailText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="bronnyjames@dlsu.edu.ph"
+            android:text="example@dlsu.edu.ph"
             android:textSize="16sp"
             android:fontFamily="@font/roboto"
             android:textColor="@android:color/black"
@@ -136,7 +136,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:onClick="signOutFunction">
 
             <ImageView
                 android:id="@+id/signOutIcon"
@@ -159,7 +160,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:onClick="deleteAccountFunction">
 
             <ImageView
                 android:id="@+id/deleteAccountIcon"

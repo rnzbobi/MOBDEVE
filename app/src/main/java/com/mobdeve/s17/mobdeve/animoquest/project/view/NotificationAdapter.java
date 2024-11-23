@@ -1,6 +1,6 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
-import android.app.Notification;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,10 +9,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
+import com.mobdeve.s17.mobdeve.animoquest.project.model.NotificationHolder;
 
 import java.util.List;
 
@@ -34,52 +39,50 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         NotificationHolder notification = notificationList.get(position);
+
         holder.title.setText(notification.getTitle());
         holder.subject.setText(notification.getSubject());
         holder.timestamp.setText(notification.getTimestamp());
-        holder.profileImage.setImageResource(notification.getProfileImageResId());
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Show the BottomSheetDialog when clicked
-                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(holder.itemView.getContext());
-                View bottomSheetView = LayoutInflater.from(holder.itemView.getContext())
-                        .inflate(R.layout.bottom_sheet_notification, null);
+        if (notification.isRead()) {
+            holder.title.setAlpha(0.6f); // Dim the title for read notifications
+            holder.statusDot.setVisibility(View.INVISIBLE); // Hide the blue dot for read notifications
+        } else {
+            holder.title.setAlpha(1.0f); // Normal brightness for unread notifications
+            holder.statusDot.setVisibility(View.VISIBLE); // Show the blue dot for unread notifications
+        }
 
-                // Set the title, message, and image inside the bottom sheet
-                TextView title = bottomSheetView.findViewById(R.id.bottom_sheet_title);
-                TextView message = bottomSheetView.findViewById(R.id.bottom_sheet_message);
-                ImageView imageView = bottomSheetView.findViewById(R.id.bottom_sheet_image);
-                ImageView posterView = bottomSheetView.findViewById(R.id.bottom_sheet_poster);
-                Button closeButton = bottomSheetView.findViewById(R.id.btn_close_bottom_sheet);
+        holder.itemView.setOnClickListener(v -> {
 
-                // Set the notification details
-                title.setText(notification.getTitle());
-                message.setText(notification.getMessage());
+            // Show the BottomSheetDialog when clicked
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(holder.itemView.getContext());
+            View bottomSheetView = LayoutInflater.from(holder.itemView.getContext())
+                    .inflate(R.layout.bottom_sheet_notification, null);
 
-                // Set the image for the notification (use notification's profile image or placeholder)
-                imageView.setImageResource(notification.getProfileImageResId());
+            // Set the title, message, inside the bottom sheet
+            TextView title = bottomSheetView.findViewById(R.id.bottom_sheet_title);
+            TextView message = bottomSheetView.findViewById(R.id.bottom_sheet_message);
+            ImageView imageView = bottomSheetView.findViewById(R.id.bottom_sheet_image);
+            Button closeButton = bottomSheetView.findViewById(R.id.btn_close_bottom_sheet);
+            NestedScrollView scrollView = bottomSheetView.findViewById(R.id.nestedScrollView);
 
-                // Set the poster image (if available)
-                if (notification.getPosterImageResId() != 0) {
-                    posterView.setVisibility(View.VISIBLE);
-                    posterView.setImageResource(notification.getPosterImageResId());
-                } else {
-                    posterView.setVisibility(View.GONE);  // Hide the poster if not available
-                }
+            // Populate the bottom sheet content
+            title.setText(notification.getTitle());
+            message.setText(notification.getMessage());
+            imageView.setImageResource(R.drawable.logo_dlsu);
 
-                // Close button action
-                closeButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        bottomSheetDialog.dismiss();
-                    }
-                });
+            // Mark notification as read
+            notification.setRead(true);
+            notifyItemChanged(position);
 
-                bottomSheetDialog.setContentView(bottomSheetView);
-                bottomSheetDialog.show();
-            }
+            // Update isRead status in the database
+            updateNotificationReadStatus(notification.getId());
+
+            // Close button action
+            closeButton.setOnClickListener(v1 -> bottomSheetDialog.dismiss());
+
+            bottomSheetDialog.setContentView(bottomSheetView);
+            bottomSheetDialog.show();
         });
     }
 
@@ -88,8 +91,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return notificationList.size();
     }
 
+    public void updateData(List<NotificationHolder> newNotifications) {
+        this.notificationList.clear();
+        this.notificationList.addAll(newNotifications);
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView profileImage;
+        ImageView profileImage, statusDot;
         TextView subject, timestamp, title;
 
         public ViewHolder(@NonNull View itemView) {
@@ -98,7 +107,25 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             profileImage = itemView.findViewById(R.id.profile_image);
             subject = itemView.findViewById(R.id.subject);
             timestamp = itemView.findViewById(R.id.timestamp);
+            statusDot = itemView.findViewById(R.id.status_dot);
         }
     }
-}
 
+    private void updateNotificationReadStatus(String notificationId) {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference userNotificationsRef = FirebaseDatabase.getInstance()
+                .getReference("userNotifications")
+                .child(currentUserId)
+                .child(notificationId);
+
+        userNotificationsRef.child("isRead").setValue(true)
+                .addOnSuccessListener(aVoid -> {
+                    // Successfully updated
+                })
+                .addOnFailureListener(e -> {
+                    // Log or show error
+                    Log.e("NotificationAdapter", "Failed to update read status: " + e.getMessage());
+                });
+    }
+
+}
