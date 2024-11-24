@@ -21,9 +21,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.ElevatorViewHolder> {
 
@@ -67,6 +69,54 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
         });
     }
 
+
+    public void checkAndUpdateFloorData() {
+        DatabaseReference elevatorsRef = FirebaseDatabase.getInstance().getReference("Elevators");
+
+        elevatorsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot elevatorSnapshot : snapshot.getChildren()) {
+                    String elevatorName = elevatorSnapshot.getKey();
+                    DatabaseReference floorsRef = elevatorsRef.child(elevatorName).child("Floors");
+
+                    for (DataSnapshot floorSnapshot : elevatorSnapshot.child("Floors").getChildren()) {
+                        String floor = floorSnapshot.getKey();
+                        String time = floorSnapshot.child("time").getValue(String.class);
+
+                        if (time != null && hasTimeExceededOneMinute(time)) {
+                            // Update capacity to 0 and time to current time
+                            DatabaseReference floorRef = floorsRef.child(floor);
+                            floorRef.child("capacity").setValue(0);
+                            floorRef.child("time").setValue(getCurrentTime());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Handle database error
+            }
+        });
+    }
+
+    // Helper method to check if the time has exceeded one minute
+    private boolean hasTimeExceededOneMinute(String floorTime) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+            Date floorDate = sdf.parse(floorTime);
+            Date currentDate = new Date();
+
+            // Calculate time difference in milliseconds
+            long differenceInMillis = currentDate.getTime() - floorDate.getTime();
+            return differenceInMillis >= 1 * 60 * 1000; // Check if difference is greater than or equal to 1 minute
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private int extractFloorNumber(String floorName) {
         try {
             return Integer.parseInt(floorName.replaceAll("[^\\d]", ""));
@@ -82,6 +132,58 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                 .inflate(R.layout.item_elevator, parent, false);
         return new ElevatorViewHolder(view);
     }
+
+
+    private String getCurrentTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        return sdf.format(new Date());
+    }
+
+    private void refreshFloorData(String elevatorName) {
+        DatabaseReference elevatorRef = FirebaseDatabase.getInstance()
+                .getReference("Elevators")
+                .child(elevatorName)
+                .child("Floors");
+
+        elevatorRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String currentTime = getCurrentTime();
+                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+
+                for (DataSnapshot floorSnapshot : snapshot.getChildren()) {
+                    String floor = floorSnapshot.getKey();
+                    String floorTime = floorSnapshot.child("time").getValue(String.class);
+
+                    if (floorTime != null && !floorTime.isEmpty()) {
+                        try {
+                            Date floorDate = sdf.parse(floorTime);
+                            Date currentDate = sdf.parse(currentTime);
+
+                            if (floorDate != null && currentDate != null) {
+                                long timeDifference = currentDate.getTime() - floorDate.getTime();
+                                long minutesDifference = timeDifference / (60 * 1000);
+
+                                if (minutesDifference >= 2) {
+                                    // Reset capacity to 0 and update the time to the current time
+                                    elevatorRef.child(floor).child("capacity").setValue(0);
+                                    elevatorRef.child(floor).child("time").setValue(currentTime);
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace(); // Handle parsing errors
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Handle error
+            }
+        });
+    }
+
 
     @Override
     public void onBindViewHolder(@NonNull ElevatorViewHolder holder, int position) {
@@ -113,35 +215,59 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                 String capacityInput = inputCapacity.getText().toString().trim();
                 String floorInput = inputFloor.getText().toString().trim();
 
+                // New destination input
+                EditText inputDestination = bottomSheetView.findViewById(R.id.input_destination);
+                String destinationInput = inputDestination.getText().toString().trim();
+
                 if (!capacityInput.isEmpty() && !floorInput.isEmpty()) {
                     int capacity = Integer.parseInt(capacityInput);
-                    String floor = floorInput;
 
-                    // Update the capacity in the Firebase database
+                    // Get the current device time
+                    String currentTime = getCurrentTime();
+
+                    // Refresh the capacity and time for all floors
+                    refreshFloorData(item.getElevatorName());
+
+                    // Update the capacity and time in the Firebase database
                     DatabaseReference floorRef = FirebaseDatabase.getInstance()
                             .getReference("Elevators")
                             .child(item.getElevatorName())
                             .child("Floors")
-                            .child(floor);
+                            .child(floorInput);
 
                     floorRef.child("capacity").setValue(capacity).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(
-                                    holder.itemView.getContext(),
-                                    "Capacity updated successfully",
-                                    Toast.LENGTH_SHORT
-                            ).show();
+                            // Update the time in the database
+                            floorRef.child("time").setValue(currentTime).addOnCompleteListener(timeTask -> {
+                                if (timeTask.isSuccessful()) {
+                                    Toast.makeText(
+                                            holder.itemView.getContext(),
+                                            "Capacity and time updated successfully",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
 
-                            // Proceed to the next activity
-                            Intent intent = new Intent(holder.itemView.getContext(), ElevatorDetailsActivity.class);
-                            intent.putStringArrayListExtra("floors", new ArrayList<>(item.getFloors()));
-                            intent.putExtra("elevator_name", item.getElevatorName());
-                            intent.putExtra("image_name", item.getImageName());
-                            intent.putExtra("capacity", capacity);
-                            intent.putExtra("floor", floor);
+                                    // Update waiting times for all floors
+                                    updateWaitingTimes(item.getElevatorName(), Integer.parseInt(floorInput), 5, 3);
 
-                            holder.itemView.getContext().startActivity(intent);
-                            bottomSheetDialog.dismiss();
+                                    // Proceed to the next activity
+                                    Intent intent = new Intent(holder.itemView.getContext(), ElevatorDetailsActivity.class);
+                                    intent.putStringArrayListExtra("floors", new ArrayList<>(item.getFloors()));
+                                    intent.putExtra("elevator_name", item.getElevatorName());
+                                    intent.putExtra("image_name", item.getImageName());
+                                    intent.putExtra("capacity", capacity);
+                                    intent.putExtra("floor", floorInput);
+                                    intent.putExtra("destination", destinationInput); // Pass destination floor
+
+                                    holder.itemView.getContext().startActivity(intent);
+                                    bottomSheetDialog.dismiss();
+                                } else {
+                                    Toast.makeText(
+                                            holder.itemView.getContext(),
+                                            "Failed to update time",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                }
+                            });
                         } else {
                             Toast.makeText(
                                     holder.itemView.getContext(),
@@ -155,6 +281,7 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                 }
             });
 
+
             closeButton.setOnClickListener(view -> bottomSheetDialog.dismiss());
             bottomSheetDialog.show();
         });
@@ -164,6 +291,65 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
     public int getItemCount() {
         return elevatorItems.size();
     }
+
+    private void updateWaitingTimes(String elevatorName, int userFloor, int baseTime, int travelTimePerFloor) {
+        DatabaseReference elevatorRef = FirebaseDatabase.getInstance()
+                .getReference("Elevators")
+                .child(elevatorName)
+                .child("Floors");
+
+        elevatorRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int totalCapacity = 0;
+                List<String> floors = new ArrayList<>();
+                List<Integer> capacities = new ArrayList<>();
+
+                for (DataSnapshot floorSnapshot : snapshot.getChildren()) {
+                    String floor = floorSnapshot.getKey();
+                    Integer capacity = floorSnapshot.child("capacity").getValue(Integer.class);
+                    if (floor != null && capacity != null) {
+                        floors.add(floor);
+                        capacities.add(capacity);
+                        totalCapacity += capacity;
+                    }
+                }
+
+                for (int i = 0; i < floors.size(); i++) {
+                    String floor = floors.get(i);
+                    int capacity = capacities.get(i);
+
+                    // Skip the user's floor to hide its waiting time
+                    int floorNumber = extractFloorNumber(floor);
+                    if (floorNumber == userFloor) {
+                        elevatorRef.child(floor).child("waitingTime").setValue(null); // Remove waiting time
+                        continue;
+                    }
+
+                    // Calculate distance from user's floor
+                    int distance = Math.abs(floorNumber - userFloor);
+
+                    // Adjusted calculation
+                    double capacityFactor = (double) capacity / totalCapacity;
+                    int waitingTime = (int) (baseTime
+                            + (distance * travelTimePerFloor * 0.8) // Reduced distance factor
+                            + (capacityFactor * 5)); // Scaled down capacity factor
+
+                    // Cap the waiting time to 30 minutes
+                    waitingTime = Math.min(waitingTime, 30);
+
+                    // Update the waiting time in the database
+                    elevatorRef.child(floor).child("waitingTime").setValue(waitingTime);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Handle error
+            }
+        });
+    }
+
 
     static class ElevatorViewHolder extends RecyclerView.ViewHolder {
         TextView buildingName;

@@ -3,18 +3,78 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Display Elevator Details -->
     <TextView
         android:id="@+id/elevatorNameTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Elevator Name"
-        android:textSize="24sp"
+        android:padding="8dp"
+        android:background="#347000"
+        android:textColor="@android:color/white"
+        android:gravity="left"
+        android:text="Elevator Details"
+        android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
 
+    <!-- Elevator Image -->
+    <ImageView
+        android:id="@+id/elevatorImageView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@id/elevatorNameTextView"
+        android:layout_marginTop="-16dp"
+        android:contentDescription="Elevator Image"
+        android:scaleType="centerCrop" />
+
+    <!-- Header Row -->
+    <LinearLayout
+        android:id="@+id/headerRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/elevatorImageView"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:weightSum="3"
+        android:padding="8dp"
+        android:background="#347000">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Floor"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Waiting time"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Dest"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- RecyclerView for Floors -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/floorsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/elevatorNameTextView" />
+        android:layout_below="@id/headerRow"
+        android:layout_marginTop="8dp" />
 </RelativeLayout>

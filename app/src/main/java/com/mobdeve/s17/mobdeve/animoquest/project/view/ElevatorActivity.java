@@ -2,6 +2,8 @@ package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -20,8 +22,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 
 public class ElevatorActivity extends AppCompatActivity {
 
@@ -47,6 +53,27 @@ public class ElevatorActivity extends AppCompatActivity {
         adapter = new ElevatorAdapter();
         recyclerView.setAdapter(adapter);
 
+
+        // Check if "Elevators" node exists
+        databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    // Add data if "Elevators" node does not exist
+                    addElevatorData();
+                }
+                // Initialize the adapter after adding data (or confirming data exists)
+                adapter = new ElevatorAdapter();
+                recyclerView.setAdapter(adapter);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.e("DatabaseError", "Failed to check Elevators node: " + error.getMessage());
+            }
+        });
+
+
         ImageView mapIcon = findViewById(R.id.map_icon);
         mapIcon.setOnClickListener(v -> startActivity(new Intent(ElevatorActivity.this, MainActivity.class)));
 
@@ -64,8 +91,69 @@ public class ElevatorActivity extends AppCompatActivity {
             Intent filterIntent = new Intent(ElevatorActivity.this, FilterActivity.class);
             startActivityForResult(filterIntent, 1);
         });
+
+        // Periodically check and update floor data
+        Handler handler = new Handler();
+        Runnable periodicTask = new Runnable() {
+            @Override
+            public void run() {
+                adapter.checkAndUpdateFloorData(); // Call the method to check and update floor data
+                handler.postDelayed(this, 60 * 1000); // Run every 60 seconds
+            }
+        };
     }
 
+
+    private void addElevatorData() {
+        // Henry Elevators
+        addOrUpdateElevator("Henry Elevator 1", generateFloors(15), "henry_photo");
+        addOrUpdateElevator("Henry Elevator 2", generateFloors(15), "henry_photo");
+
+        // Yuchengco Elevators
+        addOrUpdateElevator("Yuchengco Elevator 1", generateFloors(9), "yuchengco_photo");
+        addOrUpdateElevator("Yuchengco Elevator 2", generateFloors(9), "yuchengco_photo");
+
+        // Andrew Elevators
+        addOrUpdateElevator("Andrew Elevator 1", generateFloors(22), "andrew_photo");
+        addOrUpdateElevator("Andrew Elevator 2", generateFloors(22), "andrew_photo");
+
+        // Razon Elevators
+        addOrUpdateElevator("Razon Elevator 1", generateFloors(9), "razon_photo");
+        addOrUpdateElevator("Razon Elevator 2", generateFloors(9), "razon_photo");
+    }
+
+    private void addOrUpdateElevator(String elevatorName, String[] floors, String imageName) {
+        DatabaseReference elevatorRef = databaseRef.child(elevatorName);
+
+        Random random = new Random();
+        for (int i = 0; i < floors.length; i++) {
+            // Use numeric keys directly
+            DatabaseReference floorRef = elevatorRef.child("Floors").child(floors[i]);
+            floorRef.child("name").setValue(floors[i]); // Numeric floor value
+            floorRef.child("capacity").setValue(random.nextInt(20) + 1); // Random capacity between 1 and 20
+            floorRef.child("waitingTime").setValue(random.nextInt(5) + 1); // Random waiting time between 1 and 5 minutes
+            // Get the current device time and format it
+            String currentTime = getCurrentTime();
+            floorRef.child("time").setValue(currentTime); // Set the current device time
+
+        }
+
+        elevatorRef.child("image").setValue(imageName);
+    }
+
+    private String getCurrentTime() {
+        // Format the current time based on the device's settings
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        return sdf.format(new Date());
+    }
+
+    private String[] generateFloors(int floorCount) {
+        String[] floors = new String[floorCount];
+        for (int i = 0; i < floorCount; i++) {
+            floors[i] = String.valueOf(i + 1); // Numeric floor names
+        }
+        return floors;
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

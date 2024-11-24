@@ -21,12 +21,17 @@ import java.util.List;
 public class FloorsAdapter extends RecyclerView.Adapter<FloorsAdapter.FloorViewHolder> {
     private List<String> floors;
     private String elevatorName;
-    private String imageName;
+    private String imageName; // Keep this
+    private String destinationFloor;
+    private String floor;
 
-    public FloorsAdapter(List<String> floors, String elevatorName, String imageName) {
+    // Updated Constructor
+    public FloorsAdapter(List<String> floors, String elevatorName, String imageName, String destinationFloor, String floor) {
         this.floors = floors;
         this.elevatorName = elevatorName;
-        this.imageName = imageName;
+        this.imageName = imageName; // Retain the imageName field
+        this.destinationFloor = destinationFloor;
+        this.floor = floor;
 
         // Sort floors numerically
         this.floors.sort((f1, f2) -> {
@@ -40,52 +45,59 @@ public class FloorsAdapter extends RecyclerView.Adapter<FloorsAdapter.FloorViewH
         try {
             return Integer.parseInt(floorName.replaceAll("[^\\d]", ""));
         } catch (NumberFormatException e) {
-            return Integer.MAX_VALUE; // Handle unexpected non-numeric floor names
+            return Integer.MAX_VALUE;
         }
     }
 
     @NonNull
     @Override
     public FloorViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_floor, parent, false);
+        // Inflate the item_floor.xml layout
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_floor, parent, false);
         return new FloorViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull FloorViewHolder holder, int position) {
+        // Current floor in the list
         String floorName = floors.get(position);
-        holder.floorName.setText(floorName);
 
-        // Set default floor icon
-        int resId = holder.itemView.getContext().getResources().getIdentifier(
-                imageName, "drawable", holder.itemView.getContext().getPackageName());
-        holder.floorIcon.setImageResource(resId);
-
-        // Fetch capacity and waiting time from the Firebase database
+        // Fetch data for the current floor from Firebase
         DatabaseReference floorRef = FirebaseDatabase.getInstance()
                 .getReference("Elevators")
                 .child(elevatorName)
                 .child("Floors")
                 .child(floorName);
 
+
+        // Set Floor Text (specific to this row)
+        holder.floorTextView.setText(floor);
+
+        // Destination Text (same for all rows, passed via constructor)
+        holder.destinationTextView.setText(destinationFloor);
+
+        // Waiting Time (specific to this row, fetched dynamically from Firebase)
         floorRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Integer capacity = snapshot.child("capacity").getValue(Integer.class);
                 Integer waitingTime = snapshot.child("waitingTime").getValue(Integer.class);
 
-                holder.capacity.setText("Capacity: " + (capacity != null ? capacity : "N/A"));
-                holder.waitingTime.setText("Waiting Time: " + (waitingTime != null ? waitingTime + " min" : "N/A"));
+                if (waitingTime != null) {
+                    holder.waitingTimeTextView.setText(waitingTime + " min/s");
+                    holder.waitingTimeTextView.setVisibility(View.VISIBLE);
+                } else {
+                    holder.waitingTimeTextView.setVisibility(View.GONE); // Hide if no waiting time
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                holder.capacity.setText("Capacity: N/A");
-                holder.waitingTime.setText("Waiting Time: N/A");
+                holder.waitingTimeTextView.setVisibility(View.GONE); // Hide on error
             }
         });
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -93,17 +105,15 @@ public class FloorsAdapter extends RecyclerView.Adapter<FloorsAdapter.FloorViewH
     }
 
     static class FloorViewHolder extends RecyclerView.ViewHolder {
-        TextView floorName;
-        TextView capacity;
-        TextView waitingTime;
-        ImageView floorIcon;
+        TextView destinationTextView;
+        TextView waitingTimeTextView;
+        TextView floorTextView;
 
         public FloorViewHolder(@NonNull View itemView) {
             super(itemView);
-            floorName = itemView.findViewById(R.id.floorName);
-            capacity = itemView.findViewById(R.id.capacity);
-            waitingTime = itemView.findViewById(R.id.waitingTime);
-            floorIcon = itemView.findViewById(R.id.floor_icon);
+            destinationTextView = itemView.findViewById(R.id.destinationTextView);
+            waitingTimeTextView = itemView.findViewById(R.id.waitingTimeTextView);
+            floorTextView = itemView.findViewById(R.id.floorTextView);
         }
     }
 }

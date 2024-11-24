@@ -56,13 +56,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Apply Filter"
+                android:backgroundTint="#347000"
                 android:layout_marginEnd="16dp" />
 
             <Button
                 android:id="@+id/cancelFilterButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cancel" />
+                android:text="Cancel"
+                android:backgroundTint="#6D6969"/>
         </LinearLayout>
 
     </LinearLayout>
