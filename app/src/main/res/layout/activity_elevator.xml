@@ -38,13 +38,13 @@
             android:textColor="@android:color/white" />
 
         <Button
-            android:id="@+id/resetButton"
-            android:layout_width="match_parent"
+            android:id="@+id/resetFilterButton"
+            android:layout_width="130dp"
             android:layout_height="48dp"
-            android:layout_below="@id/filter_search_container"
-            android:layout_margin="16dp"
-            android:backgroundTint="#A00000"
-            android:text="Reset Elevators"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="#6D6969"
+            android:text="Reset Filters"
             android:textColor="@android:color/white"
             android:visibility="gone" />
 

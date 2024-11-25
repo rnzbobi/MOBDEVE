@@ -22,6 +22,7 @@ public class ElevatorDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_elevator_details);
 
+
         // Get data from intent
         String elevatorName = getIntent().getStringExtra("elevator_name");
         List<String> floors = getIntent().getStringArrayListExtra("floors");
@@ -59,4 +60,5 @@ public class ElevatorDetailsActivity extends AppCompatActivity {
         // Pass destination to the adapter
         floorsRecyclerView.setAdapter(new FloorsAdapter(floors, elevatorName, imageName, destination, floor));
     }
+
 }

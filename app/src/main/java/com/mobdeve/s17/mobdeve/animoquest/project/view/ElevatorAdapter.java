@@ -215,11 +215,29 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                 String capacityInput = inputCapacity.getText().toString().trim();
                 String floorInput = inputFloor.getText().toString().trim();
 
+
                 // New destination input
                 EditText inputDestination = bottomSheetView.findViewById(R.id.input_destination);
                 String destinationInput = inputDestination.getText().toString().trim();
 
-                if (!capacityInput.isEmpty() && !floorInput.isEmpty()) {
+                if (!capacityInput.isEmpty() && !floorInput.isEmpty() && !destinationInput.isEmpty()) {
+
+                    if (floorInput.equals(destinationInput)) {
+                        // Show error if floor and destination are the same
+                        Toast.makeText(holder.itemView.getContext(),
+                                "Floor and destination cannot be the same. Please enter different values.",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (!item.getFloors().contains(floorInput) || !item.getFloors().contains(destinationInput)) {
+                        // Show error if floor or destination is not valid
+                        Toast.makeText(holder.itemView.getContext(),
+                                "Invalid floor. Please enter a valid floor for this elevator.",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
                     int capacity = Integer.parseInt(capacityInput);
 
                     // Get the current device time
@@ -298,6 +316,11 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                 .child(elevatorName)
                 .child("Floors");
 
+        // Define elevator capacity range
+        final int elevatorCapacityMin = 6;
+        final int elevatorCapacityMax = 9;
+        final int averageElevatorCapacity = (elevatorCapacityMin + elevatorCapacityMax) / 2;
+
         elevatorRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -315,6 +338,10 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                     }
                 }
 
+                // Ensure a minimum total capacity to avoid division by zero
+                int effectiveTotalCapacity = Math.max(totalCapacity, 1);
+
+                // Adjust waiting times dynamically based on total and individual capacities
                 for (int i = 0; i < floors.size(); i++) {
                     String floor = floors.get(i);
                     int capacity = capacities.get(i);
@@ -329,11 +356,14 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                     // Calculate distance from user's floor
                     int distance = Math.abs(floorNumber - userFloor);
 
-                    // Adjusted calculation
-                    double capacityFactor = (double) capacity / totalCapacity;
-                    int waitingTime = (int) (baseTime
-                            + (distance * travelTimePerFloor * 0.8) // Reduced distance factor
-                            + (capacityFactor * 5)); // Scaled down capacity factor
+                    // Calculate trips required for the floor's capacity
+                    int tripsRequired = (int) Math.ceil((double) capacity / averageElevatorCapacity);
+
+                    // Adjust waiting time based on trips required and distance
+                    double capacityFactor = (double) capacity / effectiveTotalCapacity;
+                    int waitingTime = (int) ((baseTime
+                            + (distance * travelTimePerFloor) * tripsRequired // Adjust by trips
+                            + (capacityFactor * 5))); // Floor-specific capacity adjustment
 
                     // Cap the waiting time to 30 minutes
                     waitingTime = Math.min(waitingTime, 30);
@@ -349,6 +379,8 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
             }
         });
     }
+
+
 
 
     static class ElevatorViewHolder extends RecyclerView.ViewHolder {

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -33,6 +34,7 @@ public class ElevatorActivity extends AppCompatActivity {
 
     private ElevatorAdapter adapter;
     private DatabaseReference databaseRef;
+    private Button resetFilterButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,14 @@ public class ElevatorActivity extends AppCompatActivity {
         adapter = new ElevatorAdapter();
         recyclerView.setAdapter(adapter);
 
+        // Initialize the reset filter button
+        resetFilterButton = findViewById(R.id.resetFilterButton);
+        resetFilterButton.setVisibility(View.GONE);
+        resetFilterButton.setOnClickListener(v -> {
+            // Reset filters by applying an empty filter
+            applyFilters("", 0);
+            resetFilterButton.setVisibility(View.GONE); // Hide the reset button
+        });
 
         // Check if "Elevators" node exists
         databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -189,6 +199,10 @@ public class ElevatorActivity extends AppCompatActivity {
                 }
 
                 adapter.setElevatorItems(filteredItems);
+                // Show the reset button if filters were applied
+                if (!buildingName.isEmpty() || floors > 0) {
+                    resetFilterButton.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override

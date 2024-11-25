@@ -11,10 +11,9 @@
         android:padding="8dp"
         android:background="#347000"
         android:textColor="@android:color/white"
-        android:gravity="left"
+        android:gravity="center"
         android:text="Elevator Details"
         android:textSize="18sp"
-        android:textStyle="bold"
         android:layout_marginBottom="16dp" />
 
     <!-- Elevator Image -->
@@ -77,4 +76,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/headerRow"
         android:layout_marginTop="8dp" />
+
+
 </RelativeLayout>
