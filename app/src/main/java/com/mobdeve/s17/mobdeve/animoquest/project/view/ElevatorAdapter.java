@@ -1,6 +1,7 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -146,44 +147,53 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                 .child(elevatorName)
                 .child("Floors");
 
-        elevatorRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String currentTime = getCurrentTime();
-                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        // Add a slight delay before refreshing to avoid conflict with new input
+        new Handler().postDelayed(() -> {
+            elevatorRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String currentTime = getCurrentTime();
+                    SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
 
-                for (DataSnapshot floorSnapshot : snapshot.getChildren()) {
-                    String floor = floorSnapshot.getKey();
-                    String floorTime = floorSnapshot.child("time").getValue(String.class);
+                    for (DataSnapshot floorSnapshot : snapshot.getChildren()) {
+                        String floor = floorSnapshot.getKey();
+                        String floorTime = floorSnapshot.child("time").getValue(String.class);
 
-                    if (floorTime != null && !floorTime.isEmpty()) {
-                        try {
-                            Date floorDate = sdf.parse(floorTime);
-                            Date currentDate = sdf.parse(currentTime);
+                        if (floorTime != null && !floorTime.isEmpty()) {
+                            try {
+                                Date floorDate = sdf.parse(floorTime);
+                                Date currentDate = sdf.parse(currentTime);
 
-                            if (floorDate != null && currentDate != null) {
-                                long timeDifference = currentDate.getTime() - floorDate.getTime();
-                                long minutesDifference = timeDifference / (60 * 1000);
+                                if (floorDate != null && currentDate != null) {
+                                    long timeDifference = currentDate.getTime() - floorDate.getTime();
+                                    long minutesDifference = timeDifference / (60 * 1000);
 
-                                if (minutesDifference >= 2) {
-                                    // Reset capacity to 0 and update the time to the current time
-                                    elevatorRef.child(floor).child("capacity").setValue(0);
-                                    elevatorRef.child(floor).child("time").setValue(currentTime);
+                                    // Skip floors updated in the same session (time difference < 2 minutes)
+                                    if (minutesDifference < 2) {
+                                        continue;
+                                    }
+
+                                    if (minutesDifference >= 2) {
+                                        // Reset capacity to 0 and update the time to the current time
+                                        elevatorRef.child(floor).child("capacity").setValue(0);
+                                        elevatorRef.child(floor).child("time").setValue(currentTime);
+                                    }
                                 }
+                            } catch (Exception e) {
+                                e.printStackTrace(); // Handle parsing errors
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace(); // Handle parsing errors
                         }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // Handle error
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    // Handle error
+                }
+            });
+        }, 500); // Slight delay to ensure the new input is processed
     }
+
 
 
     @Override
