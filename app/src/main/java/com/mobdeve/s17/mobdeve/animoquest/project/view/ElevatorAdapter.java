@@ -276,7 +276,7 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                                     ).show();
 
                                     // Update waiting times for all floors
-                                    updateWaitingTimes(item.getElevatorName(), Integer.parseInt(floorInput), 5, 3);
+                                    updateWaitingTimes(item.getElevatorName(), Integer.parseInt(floorInput), 5);
 
                                     // Proceed to the next activity
                                     Intent intent = new Intent(holder.itemView.getContext(), ElevatorDetailsActivity.class);
@@ -321,13 +321,12 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
         return elevatorItems.size();
     }
 
-    private void updateWaitingTimes(String elevatorName, int userFloor, int baseTime, int travelTimePerFloor) {
+    private void updateWaitingTimes(String elevatorName, int userFloor, int baseTime) {
         DatabaseReference elevatorRef = FirebaseDatabase.getInstance()
                 .getReference("Elevators")
                 .child(elevatorName)
                 .child("Floors");
 
-        // Define elevator capacity range
         final int elevatorCapacityMin = 6;
         final int elevatorCapacityMax = 9;
         final int averageElevatorCapacity = (elevatorCapacityMin + elevatorCapacityMax) / 2;
@@ -349,40 +348,40 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                     }
                 }
 
-                // Log the total capacity
-                Log.d("ElevatorCapacity", "Total capacity: " + totalCapacity);
+                Log.d("ElevatorCapacity", "Total capacity across all floors: " + totalCapacity);
 
-                // Ensure a minimum total capacity to avoid division by zero
-                int effectiveTotalCapacity = Math.max(totalCapacity, 1);
+                // Normalize total capacity (for scaling purposes)
+                int normalizedTotalCapacity = Math.min(totalCapacity, 100); // Cap total capacity at 100 for scaling
 
-                // Adjust waiting times dynamically based on total and individual capacities
                 for (int i = 0; i < floors.size(); i++) {
                     String floor = floors.get(i);
-                    int capacity = capacities.get(i);
+                    int floorCapacity = capacities.get(i);
 
-                    // Skip the user's floor to hide its waiting time
                     int floorNumber = extractFloorNumber(floor);
                     if (floorNumber == userFloor) {
-                        elevatorRef.child(floor).child("waitingTime").setValue(null); // Remove waiting time
+                        elevatorRef.child(floor).child("waitingTime").setValue(null);
                         continue;
                     }
 
-                    // Calculate distance from user's floor
+                    // Calculate distance and trips required
                     int distance = Math.abs(floorNumber - userFloor);
+                    int tripsRequired = (int) Math.ceil((double) floorCapacity / averageElevatorCapacity);
 
-                    // Calculate trips required for the floor's capacity
-                    int tripsRequired = (int) Math.ceil((double) capacity / averageElevatorCapacity);
+                    // Adjust base time with normalized capacity factor
+                    double totalCapacityFactor = (double) totalCapacity / 50.0; // Normalize to scale waiting time
+                    double distanceFactor = (double) distance * 1.5; // Distance contributes linearly
+                    double tripsFactor = (double) tripsRequired * 2; // Trips required contributes linearly
 
-                    // Adjust waiting time based on trips required and distance
-                    double capacityFactor = (double) capacity / effectiveTotalCapacity;
-                    int waitingTime = (int) ((baseTime
-                            + (distance * travelTimePerFloor) * tripsRequired // Adjust by trips
-                            + (capacityFactor * 5))); // Floor-specific capacity adjustment
+                    // Final waiting time calculation
+                    int waitingTime = (int) (baseTime
+                            + (baseTime * totalCapacityFactor) // Scale with total capacity
+                            + distanceFactor                  // Add distance effect
+                            + tripsFactor);                   // Add trips required effect
 
-                    // Cap the waiting time to 30 minutes
-                    waitingTime = Math.min(waitingTime, 30);
+                    // Cap waiting time at a practical upper limit (e.g., 20 minutes)
+                    waitingTime = Math.min(waitingTime, 20);
 
-                    // Update the waiting time in the database
+                    // Update waiting time in database
                     elevatorRef.child(floor).child("waitingTime").setValue(waitingTime);
                 }
             }
@@ -393,6 +392,7 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
             }
         });
     }
+
 
 
 
