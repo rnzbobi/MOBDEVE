@@ -34,8 +34,8 @@ public class ElevatorDetailsActivity extends AppCompatActivity {
         // Set formatted text for elevator details
         TextView elevatorNameTextView = findViewById(R.id.elevatorNameTextView);
         String formattedText = String.format(
-                "Floor: %s\nCapacity: %d\nDestination: %s\nBuilding: %s",
-                floor, capacity, destination, elevatorName
+                "Capacity: %d\nBuilding: %s",
+                capacity, elevatorName
         );
         elevatorNameTextView.setText(formattedText);
 

@@ -1,6 +1,7 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -338,6 +339,9 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
                     }
                 }
 
+                // Log the total capacity
+                Log.d("ElevatorCapacity", "Total capacity: " + totalCapacity);
+
                 // Ensure a minimum total capacity to avoid division by zero
                 int effectiveTotalCapacity = Math.max(totalCapacity, 1);
 
@@ -379,6 +383,7 @@ public class ElevatorAdapter extends RecyclerView.Adapter<ElevatorAdapter.Elevat
             }
         });
     }
+
 
 
 

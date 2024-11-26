@@ -140,7 +140,7 @@ public class ElevatorActivity extends AppCompatActivity {
             // Use numeric keys directly
             DatabaseReference floorRef = elevatorRef.child("Floors").child(floors[i]);
             floorRef.child("name").setValue(floors[i]); // Numeric floor value
-            floorRef.child("capacity").setValue(random.nextInt(20) + 1); // Random capacity between 1 and 20
+            floorRef.child("capacity").setValue(random.nextInt(6) + 2); // Random capacity between 1 and 20
             floorRef.child("waitingTime").setValue(random.nextInt(5) + 1); // Random waiting time between 1 and 5 minutes
             // Get the current device time and format it
             String currentTime = getCurrentTime();
