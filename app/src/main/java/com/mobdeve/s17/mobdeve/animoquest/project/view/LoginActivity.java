@@ -1,7 +1,10 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,6 +32,7 @@ import com.google.android.gms.auth.api.signin.internal.GoogleSignInOptionsExtens
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -186,6 +190,20 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void loginFunction(View view) {
+
+
+        if (!isConnectedToWifi()) {
+            Snackbar.make(findViewById(android.R.id.content),
+                            "Wi-Fi is required to log in. Please connect to Wi-Fi.",
+                            Snackbar.LENGTH_LONG)
+                    .setAction("Settings", v -> {
+                        // Open Wi-Fi settings when the user taps the action
+                        startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
+                    })
+                    .show();
+            return;
+        }
+
         String email = emailInput.getText().toString().trim();
         String password = passwordInput.getText().toString().trim();
 
@@ -224,6 +242,19 @@ public class LoginActivity extends AppCompatActivity {
 
                             syncUserNotifications(user.getUid());
 
+
+                            if (!isConnectedToWifi()) {
+                                Snackbar.make(findViewById(android.R.id.content),
+                                                "Wi-Fi is required to proceed. Please connect to Wi-Fi.",
+                                                Snackbar.LENGTH_LONG)
+                                        .setAction("Settings", v -> {
+                                            // Open Wi-Fi settings when the user taps the action
+                                            startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
+                                        })
+                                        .show();
+                                return; // Prevent navigation to MainActivity
+                            }
+
                             // Redirect to MainActivity
                             Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -235,6 +266,14 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    // Utility method to check Wi-Fi connectivity
+    private boolean isConnectedToWifi() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        return networkInfo != null && networkInfo.isConnected();
+    }
+
 
     public void registerFunction (View v) {
         Intent intent = new Intent(getApplicationContext(), RegistrationActivity.class);

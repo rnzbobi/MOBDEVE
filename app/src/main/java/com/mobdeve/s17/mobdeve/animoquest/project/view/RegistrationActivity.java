@@ -1,6 +1,9 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +22,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -59,6 +63,20 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     public void registerFunction(View view) {
+
+        // Check Wi-Fi connectivity
+        if (!isConnectedToWifi()) {
+            Snackbar.make(findViewById(android.R.id.content),
+                            "Wi-Fi is required to register. Please connect to Wi-Fi.",
+                            Snackbar.LENGTH_LONG)
+                    .setAction("Settings", v -> {
+                        // Open Wi-Fi settings when the user taps the action
+                        startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
+                    })
+                    .show();
+            return;
+        }
+
         String firstName = ((EditText) findViewById(R.id.firstNameInput)).getText().toString();
         String lastName = ((EditText) findViewById(R.id.lastNameInput)).getText().toString();
         String idNumber = ((EditText) findViewById(R.id.idNumberInput)).getText().toString();
@@ -110,6 +128,13 @@ public class RegistrationActivity extends AppCompatActivity {
                         Toast.makeText(RegistrationActivity.this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    // Utility method to check Wi-Fi connectivity
+    private boolean isConnectedToWifi() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        return networkInfo != null && networkInfo.isConnected();
     }
 
 }
