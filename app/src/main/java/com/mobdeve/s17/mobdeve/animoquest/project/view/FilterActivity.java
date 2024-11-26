@@ -1,50 +1,47 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.mobdeve.s17.mobdeve.animoquest.project.R;
 
 public class FilterActivity extends AppCompatActivity {
 
-    private EditText filterBuilding, filterElevatorNumber;
-    private SeekBar filterFloorsSlider, filterWaitTimeSlider, filterCapacitySlider;
-    private TextView filterFloorsValue, filterWaitTimeValue, filterCapacityValue;
-    private Button applyFilterButton, cancelFilterButton;
+    private SeekBar filterFloorsSlider;
+    private EditText filterBuilding;
+    private TextView filterFloorsValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
 
-        // Initialize views
+        // Initialize input fields
         filterBuilding = findViewById(R.id.filterBuilding);
-        filterElevatorNumber = findViewById(R.id.filterElevatorNumber);
+
+        // Initialize slider and its respective text value
         filterFloorsSlider = findViewById(R.id.filterFloorsSlider);
-        filterWaitTimeSlider = findViewById(R.id.filterWaitTimeSlider);
-        filterCapacitySlider = findViewById(R.id.filterCapacitySlider);
         filterFloorsValue = findViewById(R.id.filterFloorsValue);
-        filterWaitTimeValue = findViewById(R.id.filterWaitTimeValue);
-        filterCapacityValue = findViewById(R.id.filterCapacityValue);
-        applyFilterButton = findViewById(R.id.applyFilterButton);
-        cancelFilterButton = findViewById(R.id.cancelFilterButton);
 
-        // Set the default slider values and listeners
-        setSliderListeners();
+        // Initialize buttons
+        Button applyFilterButton = findViewById(R.id.applyFilterButton);
+        Button cancelFilterButton = findViewById(R.id.cancelFilterButton);
 
-        // Apply Filter button functionality (close activity on click)
-        applyFilterButton.setOnClickListener(v -> finish());
-
-        // Cancel Filter button functionality (close activity on click)
+        // Set up button click listeners
+        applyFilterButton.setOnClickListener(v -> applyFilters());
         cancelFilterButton.setOnClickListener(v -> finish());
+
+        // Set up seek bar listener to update text view with current progress
+        setupSeekBarListener();
     }
 
-    // Method to initialize the SeekBar listeners and update the TextView values dynamically
-    private void setSliderListeners() {
-        // Floors Slider Listener
+    private void setupSeekBarListener() {
         filterFloorsSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -52,50 +49,21 @@ public class FilterActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // No action needed here
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) {}
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // No action needed here
-            }
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+    }
 
-        // Wait Time Slider Listener
-        filterWaitTimeSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                filterWaitTimeValue.setText("Selected: " + progress + " sec");
-            }
+    private void applyFilters() {
+        String buildingName = filterBuilding.getText().toString().trim();
+        int floors = filterFloorsSlider.getProgress();
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // No action needed here
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // No action needed here
-            }
-        });
-
-        // Capacity Slider Listener
-        filterCapacitySlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                filterCapacityValue.setText("Selected: " + progress + " people");
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // No action needed here
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // No action needed here
-            }
-        });
+        Intent intent = new Intent();
+        intent.putExtra("building_name", buildingName);
+        intent.putExtra("floors", floors);
+        setResult(RESULT_OK, intent);
+        finish();
     }
 }

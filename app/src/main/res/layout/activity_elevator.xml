@@ -15,7 +15,7 @@
         android:layout_marginTop="15dp"
         android:gravity="center_vertical">
 
-        <!-- Search Bar -->
+        <!-- Search Bar
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="0dp"
@@ -23,19 +23,31 @@
             android:layout_weight="1"
             android:queryHint="Search by building"
             android:iconifiedByDefault="false"
-            android:padding="8dp" />
+            android:padding="8dp" /> -->
 
         <!-- Filter Button -->
         <Button
             android:id="@+id/filterButton"
             android:layout_width="120dp"
             android:layout_height="48dp"
-            android:text="Filter"
-            android:backgroundTint="#347000"
-            android:textColor="@android:color/white"
-            android:layout_marginEnd="16dp"
             android:layout_gravity="center_vertical"
-            android:padding="8dp" />
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="#347000"
+            android:padding="8dp"
+            android:text="Filter"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/resetFilterButton"
+            android:layout_width="130dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="#6D6969"
+            android:text="Reset Filters"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
 
     </LinearLayout>
 

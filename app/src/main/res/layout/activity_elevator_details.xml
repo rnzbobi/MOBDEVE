@@ -1,0 +1,155 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#F5F5F5">
+
+    <!-- Horizontal Lines and Icon Section -->
+    <RelativeLayout
+        android:id="@+id/iconWithLinesLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true">
+
+        <!-- Left Horizontal Line -->
+        <View
+            android:id="@+id/leftHorizontalLine"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:layout_toLeftOf="@id/centerLayout"
+            android:layout_marginEnd="8dp"
+            android:background="#347000" />
+
+        <!-- Icon and Text Centered -->
+        <LinearLayout
+            android:id="@+id/centerLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:orientation="vertical">
+
+            <!-- Icon -->
+            <ImageView
+                android:id="@+id/elevatorIcon"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:src="@drawable/elevator"
+                android:contentDescription="Elevator Icon"
+                app:tint="#347000" />
+
+
+        </LinearLayout>
+
+        <!-- Right Horizontal Line -->
+        <View
+            android:id="@+id/rightHorizontalLine"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_toRightOf="@id/centerLayout"
+            android:layout_marginStart="8dp"
+            android:background="#347000" />
+    </RelativeLayout>
+
+    <!-- Card for Elevator Details -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/detailsCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/iconWithLinesLayout"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:radius="12dp"
+        android:padding="16dp"
+        android:background="#FFFFFF">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Elevator Name -->
+
+            <TextView
+                android:id="@+id/elevatorNameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/rounded_top_corners"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="Elevator Details"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+
+            <ImageView
+                android:id="@+id/elevatorImageView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:contentDescription="Elevator Image"
+                android:scaleType="centerCrop" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Header Row -->
+    <LinearLayout
+        android:id="@+id/headerRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detailsCard"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:weightSum="3"
+        android:padding="8dp"
+        android:background="#347000"
+        android:elevation="4dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Floor"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Waiting time"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Dest"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- RecyclerView for Floors -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/floorsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/headerRow"
+        android:layout_marginTop="8dp" />
+
+</RelativeLayout>
