@@ -1,8 +1,11 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -20,11 +23,13 @@ public class IndoorNavigationAdapter extends RecyclerView.Adapter<IndoorNavigati
 
     // List of building items (each building will be its own card)
     private List<NavigationItem> navigationItems;
+    private Context context;
 
     // Constructor for IndoorNavigationAdapter, taking a list of buildings
-    public IndoorNavigationAdapter(List<Building> buildingList) {
+    public IndoorNavigationAdapter(List<Building> buildingList, Context context) {
         navigationItems = new ArrayList<>();
         updateBuildings(buildingList);  // Initialize with provided building list
+        this.context = context;
     }
 
     @Override
@@ -46,51 +51,27 @@ public class IndoorNavigationAdapter extends RecyclerView.Adapter<IndoorNavigati
             case "Henry":
                 holder.buildingIcon.setImageResource(R.drawable.henry_photo);
                 break;
-            case "La Salle Hall":
-                holder.buildingIcon.setImageResource(R.drawable.lasallehall_photo);
-                break;
-            case "Andrew":
-                holder.buildingIcon.setImageResource(R.drawable.andrew_photo);
-                break;
-            case "Razon":
-                holder.buildingIcon.setImageResource(R.drawable.razon_photo);
-                break;
-            case "Goks":
-                holder.buildingIcon.setImageResource(R.drawable.gokongwei_photo);
-                break;
+//            case "La Salle Hall":
+//                holder.buildingIcon.setImageResource(R.drawable.lasallehall_photo);
+//                break;
+//            case "Andrew":
+//                holder.buildingIcon.setImageResource(R.drawable.andrew_photo);
+//                break;
+//            case "Razon":
+//                holder.buildingIcon.setImageResource(R.drawable.razon_photo);
+//                break;
+//            case "Goks":
+//                holder.buildingIcon.setImageResource(R.drawable.gokongwei_photo);
+//                break;
         }
-
-
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Show the BottomSheetDialog when clicked
-                BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(holder.itemView.getContext());
-                View bottomSheetView = LayoutInflater.from(holder.itemView.getContext())
-                        .inflate(R.layout.indoornavigation_popup, null);
-
-                // Set the title, message, and image inside the bottom sheet
-                TextView title = bottomSheetView.findViewById(R.id.indoornavigation_title);
-                TextView floor = bottomSheetView.findViewById(R.id.floor);
-                TextView room = bottomSheetView.findViewById(R.id.room);
-                Spinner floorSpinner = bottomSheetView.findViewById(R.id.floorspinner);
-                Spinner roomSpinner = bottomSheetView.findViewById(R.id.roomspinner);
-                Button closeButton = bottomSheetView.findViewById(R.id.navigate_btn);
-
-                title.setText(navigationItem.getBuildingName());
-
-
-                // Close button action
-                closeButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        bottomSheetDialog.dismiss();
-                    }
-                });
-
-                bottomSheetDialog.setContentView(bottomSheetView);
-                bottomSheetDialog.show();
+                Intent intent = new Intent(context,IndoorNavigationResultActivity.class);
+                intent.putExtra("building_name", navigationItem.getBuildingName());
+                intent.putExtra("building_floorcount", navigationItem.getFloors());
+                context.startActivity(intent);
             }
         });
     }
