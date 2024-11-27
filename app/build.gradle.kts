@@ -77,7 +77,9 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
     implementation ("org.mindrot:jbcrypt:0.4")
     implementation ("com.jakewharton.threetenabp:threetenabp:1.4.4")
-
+    implementation ("androidx.viewpager2:viewpager2:1.1.0")
+    implementation ("me.relex:circleindicator:2.1.6")
+    implementation ("pl.droidsonroids.gif:android-gif-drawable:1.2.23")
 }
 
 apply(plugin = "com.google.gms.google-services")

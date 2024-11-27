@@ -5,13 +5,13 @@ import java.util.List;
 public class Building {
     private String name;
     private List<Integer> elevators;
-    private int floors;
+    private int noOfFloors;
     private List<Integer> capacities;  // Updated: List of capacities for each elevator
 
-    public Building(String name, List<Integer> elevators, int floors, List<Integer> capacities) {
+    public Building(String name, List<Integer> elevators, int noOfFloors, List<Integer> capacities) {
         this.name = name;
         this.elevators = elevators;
-        this.floors = floors;
+        this.noOfFloors = noOfFloors;
         this.capacities = capacities;
     }
 
@@ -24,7 +24,7 @@ public class Building {
     }
 
     public int getFloors() {
-        return floors;
+        return noOfFloors;
     }
 
     public List<Integer> getCapacities() {
