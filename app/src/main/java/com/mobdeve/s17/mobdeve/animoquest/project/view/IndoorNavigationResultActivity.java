@@ -1,6 +1,8 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 
+import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -55,11 +57,51 @@ public class IndoorNavigationResultActivity extends AppCompatActivity {
         recyclerView2.setLayoutManager(layoutManager2);
         recyclerView2.setAdapter(adapter2);
 
-        ImageView backBtn = findViewById(R.id.indoornavigationbackbtn);
-        backBtn.setOnClickListener(new View.OnClickListener() {
+        // Set the indoor_icon to green
+        ImageView indoorIcon = findViewById(R.id.indoor_icon);
+        indoorIcon.setColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.SRC_IN);
+
+        // Set up click listener for indoor_icon
+        ImageView mapIcon = findViewById(R.id.map_icon);
+        mapIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish(); // Finish the current activity and return to the previous one
+                // Navigate to IndoorNavigationActivity
+                Intent intent = new Intent(IndoorNavigationResultActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Set up click listener for elevator_icon
+        ImageView elevatorIcon = findViewById(R.id.elevator_icon);
+        elevatorIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to ElevatorActivity
+                Intent intent = new Intent(IndoorNavigationResultActivity.this, ElevatorActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Set up click listener for elevator_icon
+        ImageView notificationIcon = findViewById(R.id.notification_icon);
+        notificationIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to ElevatorActivity
+                Intent intent = new Intent(IndoorNavigationResultActivity.this, NotificationActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Set up click listener for elevator_icon
+        ImageView profileIcon = findViewById(R.id.profile_icon);
+        profileIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to ElevatorActivity
+                Intent intent = new Intent(IndoorNavigationResultActivity.this, ProfileActivity.class);
+                startActivity(intent);
             }
         });
     }

@@ -1,42 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="view.IndoorNavigationResultActivity">
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="420dp">
-
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".view.MainActivity">
 
     <pl.droidsonroids.gif.GifImageView
         android:id="@+id/indoornavimage"
         android:layout_width="match_parent"
-        android:layout_height="420dp"
+        android:layout_height="320dp"
+        android:layout_alignParentTop="true"
         android:clickable="false"
         android:focusable="true"
         android:src="@mipmap/ic_launcher_round" />
 
-    <ImageView
-        android:id="@+id/indoornavigationbackbtn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/indoornavigationbackbtn"
-        android:clickable="true"
-        android:focusable="true"
-        android:layout_marginStart="6dp"
-        android:layout_margin="6dp"
-        android:elevation="50dp"/>
-
-    </RelativeLayout>
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/indoornavimage"
             android:text="Title Text"
             android:textColor="#000000"
             android:textSize="24dp"
@@ -48,6 +32,7 @@
             android:id="@+id/tvTitle2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/tvTitle"
             android:text="Title Text"
             android:textColor="#8a8787"
             android:textSize="16dp"
@@ -58,12 +43,14 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/indoornavfloors"
             android:layout_width="match_parent"
-            android:layout_height="70dp" />
+            android:layout_height="70dp"
+            android:layout_below="@+id/tvTitle2"/>
     <TextView
         android:id="@+id/flooramenitiestext"
         android:layout_width="match_parent"
         android:layout_height="20dp"
         android:layout_marginTop="6dp"
+        android:layout_below="@+id/indoornavfloors"
         android:text="X Floor Amenities"
         android:layout_marginLeft="10dp"
         android:gravity="center_vertical"/>
@@ -71,12 +58,14 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/indoornavamenities"
         android:layout_width="match_parent"
-        android:layout_height="175dp" />
+        android:layout_height="175dp"
+        android:layout_below="@+id/flooramenitiestext"/>
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_below="@id/indoornavamenities"
         app:cardCornerRadius="5dp"
         app:cardElevation="6dp"
         android:layout_margin="10dp">
@@ -105,7 +94,68 @@
 
         </TextView>
     </LinearLayout>
-
     </androidx.cardview.widget.CardView>
 
-</LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/icon_container"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Clickable icons with fixed sizes and spacing -->
+        <ImageView
+            android:id="@+id/map_icon"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:src="@drawable/map_icon"
+            android:clickable="true"
+            android:contentDescription="Map Icon" />
+
+        <ImageView
+            android:id="@+id/indoor_icon"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/indoor_navigation"
+            android:clickable="true"
+            android:contentDescription="Indoor Navigation Icon"/>
+
+        <ImageView
+            android:id="@+id/elevator_icon"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/elevator"
+            android:clickable="true"
+            android:contentDescription="Elevator Icon"/>
+
+        <ImageView
+            android:id="@+id/notification_icon"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/notification"
+            android:clickable="true"
+            android:contentDescription="Notification Icon"/>
+
+        <ImageView
+            android:id="@+id/profile_icon"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:padding="10dp"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/profile"
+            android:clickable="true"
+            android:contentDescription="Profile Icon"/>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

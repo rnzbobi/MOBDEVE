@@ -1,6 +1,7 @@
 package com.mobdeve.s17.mobdeve.animoquest.project.view;
 
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -83,6 +84,8 @@ public class ElevatorActivity extends AppCompatActivity {
             }
         });
 
+        ImageView elevatorIcon = findViewById(R.id.elevator_icon);
+        elevatorIcon.setColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.SRC_IN);
 
         ImageView mapIcon = findViewById(R.id.map_icon);
         mapIcon.setOnClickListener(v -> startActivity(new Intent(ElevatorActivity.this, MainActivity.class)));
