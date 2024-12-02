@@ -88,7 +88,13 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Acknowledgements
 
-Special thanks to the developers of the Universal Studios app for the inspiration and to the De La Salle University community for their support.
+Special thanks to the developers of the Universal Studios app:
+
+RHENZ BHOVIE O. VILORIA
+STEVEN CHARLES K. YU
+EMMANUEL ANDREW TING
+ACEMERE F. VILLENA
+
 
 ---
 
